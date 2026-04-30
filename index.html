@@ -459,6 +459,10 @@
     <h2 id="titulo-criar-senha">Criar sua senha</h2>
     <p class="sub" id="sub-criar-senha">Defina uma senha para acessar o portal CECON</p>
     <div class="campo-form">
+      <label>Nome da Empresa / Cliente</label>
+      <input type="text" id="nome-empresa" placeholder="Ex: João Silva Ltda" />
+    </div>
+    <div class="campo-form">
       <label>Nova senha</label>
       <input type="password" id="nova-senha" placeholder="Mínimo 8 caracteres" onkeydown="if(event.key==='Enter')definirSenha()" />
     </div>
@@ -910,6 +914,24 @@ async function definirSenha() {
 
     ACCESS_TOKEN = data.access_token;
     USUARIO      = data.user || { email: '', user_metadata: {} };
+
+    // Salvar nome da empresa no perfil do usuário
+    const nomeEmpresa = document.getElementById('nome-empresa')?.value.trim();
+    if (nomeEmpresa) {
+      try {
+        await fetch(GT + '/user', {
+          method: 'PUT',
+          headers: {
+            'Authorization': 'Bearer ' + data.access_token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ data: { nome: nomeEmpresa } })
+        });
+        if (!USUARIO.user_metadata) USUARIO.user_metadata = {};
+        USUARIO.user_metadata.nome = nomeEmpresa;
+      } catch(e) { console.warn('Não foi possível salvar nome:', e); }
+    }
+
     salvarSessao(data);
 
     window.location.hash = '';
@@ -1456,34 +1478,4 @@ function fmtDataHora(str) {
 
 function mostrarToast(msg, tipo) {
   tipo = tipo || 'sucesso';
-  var c = document.getElementById('toast-container');
-  var t = document.createElement('div');
-  t.className = 'toast ' + tipo;
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(function() {
-    t.style.animation = 'slideIn 0.3s ease reverse';
-    setTimeout(function(){ t.remove(); }, 300);
-  }, 3500);
-}
-
-/* INICIALIZAÇÃO */
-document.addEventListener('DOMContentLoaded', function() {
-  try {
-    // Verificar token de convite/recuperação na URL
-    if (verificarTokenURL()) return;
-
-    // Verificar sessão salva no localStorage
-    var sessao = carregarSessao();
-    if (sessao) {
-      USUARIO      = sessao.user;
-      ACCESS_TOKEN = sessao.access_token;
-      ocultarLoading();
-      acessarPortal();
-    } else {
-      ocultarLoading();
-      mostrarLogin();
-    }
-  } catch(e) {
-    console.error('Init error:', e);
-    ocultarLoading();
+  var c = document.getElementById('toast-container
