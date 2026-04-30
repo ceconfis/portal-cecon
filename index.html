@@ -466,8 +466,8 @@
 
     /* SIDEBAR */
     .layout { display: flex; min-height: 100vh; width: 100%; }
-    #tela-dashboard .conteudo { flex: 1; min-width: 0; width: calc(100% - 220px); }
-    #tela-dashboard .area { width: 100%; min-width: 0; box-sizing: border-box; }
+    #tela-dashboard .conteudo { flex: 1; min-width: 0; width: calc(100% - 220px); overflow-y: auto; height: 100vh; }
+    #tela-dashboard .area { width: 100%; min-width: 0; box-sizing: border-box; overflow-x: hidden; }
     #tela-dashboard .dash-view.ativo { width: 100%; min-width: 0; }
     .sidebar {
       width: 220px; flex-shrink: 0;
@@ -620,7 +620,8 @@
       background: var(--branco);
       border-radius: var(--radius);
       box-shadow: var(--sombra);
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: visible;
     }
     table {
       width: 100%; border-collapse: collapse;
