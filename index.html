@@ -2674,16 +2674,14 @@ function dashSlaParaHtml(sla, status) {
 }
 
 function dashBotoesAcao(s) {
-  var html = '<button class="btn-acao ver" onclick='dashAbrirModal("' + s.protocolo + '")'>👁 Ver</button>';
-  if (s.status === 'pendente') {
-    html += '<button class="btn-acao emitir" onclick='dashMarcarEmitida("' + s.protocolo + '")'>📄 Emitir NFS-e</button>';
-    html += '<button class="btn-acao rejeitar" onclick='dashRejeitarSolicitacao("' + s.protocolo + '")'>✕ Rejeitar</button>';
-  }
-  if (s.status === 'validada') {
-    html += '<button class="btn-acao emitir" onclick='dashMarcarEmitida("' + s.protocolo + '")'>📄 Emitir NFS-e</button>';
+  var p = s.protocolo;
+  var html = '<button class="btn-acao ver" onclick="dashAbrirModal(\'' + p + '\')">👁 Ver</button>';
+  if (s.status === 'pendente' || s.status === 'validada') {
+    html += '<button class="btn-acao emitir" onclick="dashMarcarEmitida(\'' + p + '\')">📄 Emitir NFS-e</button>';
+    html += '<button class="btn-acao rejeitar" onclick="dashRejeitarSolicitacao(\'' + p + '\')">✕ Rejeitar</button>';
   }
   if (s.status === 'emitida') {
-    html += '<button class="btn-acao aprovar" onclick='dashAlterarStatus("' + s.protocolo + '","entregue")'>📧 Entregue</button>';
+    html += '<button class="btn-acao aprovar" onclick="dashAlterarStatus(\'' + p + '\',\'entregue\')">📧 Entregue</button>';
   }
   return html;
 }
@@ -2821,11 +2819,11 @@ function dashAbrirModal(protocolo) {
   // Botões no footer
   let footerHtml = `<button class="btn-sm sec" onclick="dashFecharModalBtn()">Fechar</button>`;
   if (s.status === 'pendente' || s.status === 'validada') {
-    footerHtml += '<button class="btn-sm" style="background:var(--azul-claro);" onclick='dashMarcarEmitida("' + protocolo + '")'>📄 Confirmar Emissão NFS-e</button>';
-    footerHtml += '<button class="btn-sm" style="background:var(--vermelho);" onclick='dashRejeitarSolicitacao("' + protocolo + '")'>✕ Rejeitar</button>';
+    footerHtml += '<button class="btn-sm" style="background:var(--azul-claro);" onclick="dashMarcarEmitida(\'' + protocolo + '\')">📄 Confirmar Emissão NFS-e</button>';
+    footerHtml += '<button class="btn-sm" style="background:var(--vermelho);" onclick="dashRejeitarSolicitacao(\'' + protocolo + '\')">✕ Rejeitar</button>';
   }
   if (s.status === 'emitida') {
-    footerHtml += '<button class="btn-sm" style="background:var(--verde);" onclick='dashAlterarStatus("' + protocolo + '","entregue")'>📧 Confirmar Entrega ao Cliente</button>';
+    footerHtml += '<button class="btn-sm" style="background:var(--verde);" onclick="dashAlterarStatus(\'' + protocolo + '\',\'entregue\')">📧 Confirmar Entrega ao Cliente</button>';
   }
   document.getElementById('modal-footer').innerHTML = footerHtml;
 
