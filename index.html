@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CECON — Portal NFS-e</title>
+
+  <style>
+    :root {
+      --azul:        #1a3c6e;
+      --azul-claro:  #2563b0;
+      --verde:       #16a34a;
+      --verde-light: #dcfce7;
+      --vermelho:    #dc2626;
+      --verm-light:  #fee2e2;
+      --amarelo:     #d97706;
+      --amar-light:  #fef3c7;
+      --cinza-bg:    #f3f6fb;
+      --cinza-borda: #e2e8f0;
+      --cinza-texto: #64748b;
+      --branco:      #ffffff;
+      --sombra:      0 4px 24px rgba(26,60,110,0.10);
+      --radius:      12px;
+      --radius-sm:   8px;
+      --font:        'Segoe UI', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font); background: var(--cinza-bg); color: #1e293b; min-height: 100vh; }
+
+    /* ── LOADING ── */
+    #loading-overlay {
+      position: fixed; inset: 0; background: var(--azul);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 9999; transition: opacity 0.4s;
+    }
+    #loading-overlay.fade { opacity: 0; pointer-events: none; }
+    .loading-logo {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--branco); color: var(--azul);
+      font-weight: 800; font-size: 22px;
+      display: flex; align-items: center; justify-content: center;
+      letter-spacing: -2px; margin-bottom: 20px;
+    }
+    .loading-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: var(--branco);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TELA DE LOGIN ── */
+    #tela-login {
+      display: none;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--azul) 0%, var(--azul-claro) 100%);
+      align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    #tela-login.vis { display: flex; }
+    .card-login {
+      background: var(--branco);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      padding: 44px 40px;
+      width: 100%; max-width: 420px;
+      text-align: center;
+    }
+    .login-logo {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--azul); color: var(--branco);
+      font-weight: 800; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      letter-spacing: -2px; margin: 0 auto 18px;
+    }
+    .card-login h2 { font-size: 1.35rem; color: var(--azul); font-weight: 800; margin-bottom: 4px; }
+    .card-login .sub { font-size: 0.84rem; color: var(--cinza-texto); margin-bottom: 28px; }
+    .campo-form { text-align: left; margin-bottom: 16px; }
+    .campo-form label { font-size: 0.78rem; font-weight: 700; color: #374151; display: block; margin-bottom: 5px; }
+    .campo-form input {
+      width: 100%; font-family: var(--font);
+      padding: 11px 14px; border: 1.5px solid var(--cinza-borda);
+      border-radius: var(--radius-sm); font-size: 0.9rem;
+      transition: border-color 0.15s;
+    }
+    .campo-form input:focus { outline: none; border-color: var(--azul-claro); box-shadow: 0 0 0 3px rgba(37,99,176,0.1); }
+    .btn-entrar {
+      width: 100%; background: var(--azul-claro); color: var(--branco);
+      border: none; border-radius: var(--radius-sm);
+      padding: 13px; font-size: 0.95rem; font-weight: 700; cursor: pointer;
+      transition: background 0.2s; margin-top: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-entrar:hover { background: #1e50a0; }
+    .btn-entrar:disabled { opacity: 0.6; cursor: not-allowed; }
+    .msg-erro {
+      color: var(--vermelho); font-size: 0.8rem; margin-top: 10px;
+      background: var(--verm-light); border-radius: var(--radius-sm);
+      padding: 8px 12px; display: none; text-align: left;
+    }
+    .msg-erro.vis { display: block; }
+    .login-link {
+      margin-top: 18px; font-size: 0.75rem; color: var(--cinza-texto);
+    }
+    .login-link a { color: var(--azul-claro); }
+    .btn-esqueci {
+      background: none; border: none; color: var(--azul-claro);
+      font-size: 0.8rem; cursor: pointer; margin-top: 10px;
+      text-decoration: underline;
+    }
+
+    /* ── TELA PRINCIPAL ── */
+    #tela-principal { display: none; }
+    #tela-principal.vis { display: block; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--azul);
+      padding: 0 32px;
+      display: flex; align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      position: sticky; top: 0; z-index: 100;
+      min-height: 62px;
+    }
+    .header-logo { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .logo-c {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--branco); color: var(--azul);
+      font-weight: 800; font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      letter-spacing: -1px;
+    }
+    .logo-txt h1 { color: var(--branco); font-size: 1rem; font-weight: 700; }
+    .logo-txt p  { color: #93c5fd; font-size: 0.72rem; }
+
+    /* ── TABS ── */
+    .header-tabs {
+      display: flex; align-items: center; gap: 2px;
+      margin: 0 24px; flex: 1;
+    }
+    .tab-btn {
+      padding: 20px 20px; font-size: 0.85rem; font-weight: 600;
+      color: #93c5fd; border: none; background: none;
+      cursor: pointer; border-bottom: 3px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--branco); }
+    .tab-btn.ativo { color: var(--branco); border-bottom-color: #60a5fa; }
+
+    .header-user {
+      display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    }
+    .user-chip {
+      background: rgba(255,255,255,0.12); border-radius: 20px;
+      padding: 5px 12px; color: var(--branco); font-size: 0.8rem; font-weight: 600;
+    }
+    .btn-sair {
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+      color: var(--branco); border-radius: var(--radius-sm);
+      padding: 6px 14px; font-size: 0.8rem; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-sair:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── CONTEÚDO TABS ── */
+    .tab-conteudo { display: none; }
+    .tab-conteudo.ativo { display: block; }
+
+    /* ── FORMULÁRIO ── */
+    .form-area { max-width: 760px; margin: 40px auto; padding: 0 20px 60px; }
+    .section-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px; margin-bottom: 0;
+    }
+    .section-icon {
+      width: 38px; height: 38px; border-radius: var(--radius-sm);
+      background: rgba(37,99,176,0.1); color: var(--azul-claro);
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .section-header h2 { font-size: 0.92rem; font-weight: 700; color: var(--azul); }
+    .section-header p  { font-size: 0.75rem; color: var(--cinza-texto); margin-top: 1px; }
+    .card {
+      background: var(--branco); border-radius: var(--radius);
+      box-shadow: var(--sombra); overflow: hidden; margin-bottom: 20px;
+    }
+    .card-corpo { padding: 20px 24px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .col-span-2 { grid-column: span 2; }
+    .col-span-3 { grid-column: span 3; }
+    .campo {
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .campo label {
+      font-size: 0.78rem; font-weight: 700; color: #374151;
+    }
+    .campo label .obrig { color: var(--vermelho); }
+    .campo input, .campo select, .campo textarea {
+      font-family: var(--font); font-size: 0.88rem;
+      padding: 10px 13px; border: 1.5px solid var(--cinza-borda);
+      border-radius: var(--radius-sm); background: var(--branco);
+      transition: border-color 0.15s;
+    }
+    .campo input:focus, .campo select:focus, .campo textarea:focus {
+      outline: none; border-color: var(--azul-claro);
+      box-shadow: 0 0 0 3px rgba(37,99,176,0.08);
+    }
+    .campo input.erro-campo { border-color: var(--vermelho); }
+    .campo textarea { resize: vertical; min-height: 80px; }
+    .campo .dica { font-size: 0.73rem; color: var(--cinza-texto); margin-top: 2px; }
+    .campo .msg-campo-erro { font-size: 0.73rem; color: var(--vermelho); margin-top: 2px; display: none; }
+    .campo .msg-campo-erro.vis { display: block; }
+    .tipo-grupo {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .tipo-opcao { position: relative; }
+    .tipo-opcao input[type="radio"] { position: absolute; opacity: 0; width: 0; }
+    .tipo-opcao label {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; border: 1.5px solid var(--cinza-borda);
+      border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem;
+      font-weight: 600; transition: all 0.15s;
+    }
+    .tipo-opcao input[type="radio"]:checked + label {
+      border-color: var(--azul-claro);
+      background: #eff6ff; color: var(--azul-claro);
+    }
+    .tipo-opcao label .icone { font-size: 1.2rem; }
+    .valor-input-wrap { position: relative; }
+    .valor-prefix {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 0.85rem; font-weight: 700; color: var(--cinza-texto);
+    }
+    .valor-input-wrap input { padding-left: 38px; }
+    .progresso-envio {
+      background: var(--branco); border-radius: var(--radius);
+      box-shadow: var(--sombra); padding: 40px 24px;
+      text-align: center; display: none;
+    }
+    .progresso-envio.vis { display: block; }
+    .spinner-envio {
+      width: 48px; height: 48px;
+      border: 4px solid var(--cinza-borda);
+      border-top-color: var(--azul-claro);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    .sucesso-card {
+      background: var(--verde-light); border: 1.5px solid #86efac;
+      border-radius: var(--radius); padding: 32px 24px;
+      text-align: center; display: none;
+    }
+    .sucesso-card.vis { display: block; }
+    .sucesso-card .icone-ok { font-size: 48px; margin-bottom: 12px; }
+    .sucesso-card h3 { font-size: 1.2rem; color: #14532d; font-weight: 800; margin-bottom: 6px; }
+    .sucesso-card p { font-size: 0.85rem; color: #166534; line-height: 1.6; }
+    .protocolo-gerado {
+      background: var(--branco); border-radius: var(--radius-sm);
+      padding: 10px 16px; font-family: monospace;
+      font-size: 0.95rem; font-weight: 700; color: var(--azul);
+      margin: 16px 0; border: 1.5px solid #86efac;
+    }
+    .btn-nova {
+      background: var(--azul-claro); color: var(--branco);
+      border: none; border-radius: var(--radius-sm);
+      padding: 11px 24px; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; margin-top: 16px;
+    }
+    .btn-enviar {
+      width: 100%; background: var(--azul-claro); color: var(--branco);
+      border: none; border-radius: var(--radius-sm);
+      padding: 14px; font-size: 1rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: background 0.2s;
+    }
+    .btn-enviar:hover { background: #1e50a0; }
+    .btn-enviar:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── ACOMPANHAMENTO ── */
+    .acomp-area { max-width: 900px; margin: 32px auto; padding: 0 20px 60px; }
+    .resumo-metricas {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 14px; margin-bottom: 24px;
+    }
+    .card-metric {
+      background: var(--branco); border-radius: var(--radius);
+      box-shadow: var(--sombra); padding: 18px 20px; text-align: center;
+    }
+    .card-metric .icon-m { font-size: 1.8rem; margin-bottom: 6px; }
+    .card-metric .val { font-size: 1.6rem; font-weight: 800; color: #1e293b; }
+    .card-metric .lbl { font-size: 0.72rem; color: var(--cinza-texto); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+    .filtros-bar {
+      background: var(--branco); border-radius: var(--radius);
+      padding: 14px 18px; display: flex; align-items: center;
+      gap: 12px; flex-wrap: wrap; box-shadow: var(--sombra); margin-bottom: 20px;
+    }
+    .filtros-bar label { font-size: 0.78rem; font-weight: 600; color: var(--cinza-texto); }
+    .filtros-bar select {
+      font-size: 0.8rem; padding: 7px 12px;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: var(--radius-sm); background: var(--branco);
+    }
+    .filtros-bar select:focus { outline: none; border-color: var(--azul-claro); }
+    .lista-notas { display: flex; flex-direction: column; gap: 12px; }
+    .card-nota {
+      background: var(--branco); border-radius: var(--radius);
+      box-shadow: var(--sombra); padding: 18px 22px;
+      display: grid; grid-template-columns: auto 1fr auto auto;
+      gap: 16px; align-items: center;
+      cursor: pointer; transition: box-shadow 0.15s;
+      border-left: 4px solid transparent;
+    }
+    .card-nota:hover { box-shadow: 0 6px 28px rgba(26,60,110,0.14); }
+    .card-nota.pendente { border-left-color: var(--amarelo); }
+    .card-nota.validada { border-left-color: var(--azul-claro); }
+    .card-nota.emitida  { border-left-color: var(--verde); }
+    .card-nota.entregue { border-left-color: #22c55e; }
+    .card-nota.erro     { border-left-color: var(--vermelho); }
+    .nota-num { font-family: monospace; font-size: 0.72rem; color: var(--cinza-texto); white-space: nowrap; }
+    .nota-info .nome { font-weight: 700; font-size: 0.92rem; }
+    .nota-info .desc { font-size: 0.78rem; color: var(--cinza-texto); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 400px; }
+    .nota-info .datas { font-size: 0.73rem; color: var(--cinza-texto); margin-top: 4px; }
+    .nota-valor { font-weight: 800; font-size: 1rem; color: #1e293b; font-family: monospace; white-space: nowrap; text-align: right; }
+    .nota-valor .moeda { font-size: 0.8rem; font-weight: 600; }
+    .nota-acoes { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; min-width: 120px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; white-space: nowrap;
+    }
+    .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .badge.pendente { background: var(--amar-light); color: #92400e; }
+    .badge.pendente::before { background: var(--amarelo); }
+    .badge.validada { background: #eff6ff; color: var(--azul-claro); }
+    .badge.validada::before { background: var(--azul-claro); }
+    .badge.emitida  { background: var(--verde-light); color: #14532d; }
+    .badge.emitida::before  { background: var(--verde); }
+    .badge.entregue { background: #f0fdf4; color: #166534; }
+    .badge.entregue::before { background: #22c55e; }
+    .badge.erro     { background: var(--verm-light); color: #7f1d1d; }
+    .badge.erro::before     { background: var(--vermelho); }
+    .btn-ver-nf {
+      background: #eff6ff; color: var(--azul-claro);
+      border: 1.5px solid #93c5fd; border-radius: var(--radius-sm);
+      padding: 5px 12px; font-size: 0.76rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-ver-nf:hover { background: var(--azul-claro); color: var(--branco); }
+    .btn-ver-nf:disabled { opacity: 0.4; cursor: not-allowed; }
+    .progresso-steps {
+      display: flex; align-items: center; gap: 0; margin-top: 8px;
+    }
+    .step { display: flex; align-items: center; gap: 4px; font-size: 0.68rem; color: var(--cinza-texto); }
+    .step .bolinha {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid var(--cinza-borda); background: var(--branco);
+      display: flex; align-items: center; justify-content: center; font-size: 8px;
+    }
+    .step.ok .bolinha { background: var(--verde); border-color: var(--verde); color: var(--branco); }
+    .step.ativo .bolinha { background: var(--azul-claro); border-color: var(--azul-claro); color: var(--branco); animation: pulsar 1.2s ease-in-out infinite; }
+    .step.erro .bolinha  { background: var(--vermelho); border-color: var(--vermelho); color: var(--branco); }
+    .linha-step { width: 24px; height: 2px; background: var(--cinza-borda); }
+    .linha-step.ok { background: var(--verde); }
+    @keyframes pulsar {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(37,99,176,0.3); }
+      50%       { box-shadow: 0 0 0 4px rgba(37,99,176,0); }
+    }
+    .vazio-estado {
+      text-align: center; padding: 60px 20px;
+      color: var(--cinza-texto); background: var(--branco);
+      border-radius: var(--radius); box-shadow: var(--sombra);
+    }
+    .vazio-estado .icon { font-size: 40px; margin-bottom: 12px; }
+    .paginacao { display: flex; justify-content: center; gap: 6px; margin-top: 20px; }
+    .pg-btn {
+      padding: 6px 14px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--cinza-borda);
+      background: var(--branco); cursor: pointer; font-size: 0.8rem;
+    }
+    .pg-btn.ativo { background: var(--azul-claro); color: var(--branco); border-color: var(--azul-claro); }
+    .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── MODAL ── */
+    .modal-bg {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45); z-index: 500;
+      align-items: center; justify-content: center;
+    }
+    .modal-bg.aberto { display: flex; }
+    .modal {
+      background: var(--branco); border-radius: var(--radius);
+      width: 520px; max-width: 95vw;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .modal-header {
+      padding: 20px 24px 14px; border-bottom: 1px solid var(--cinza-borda);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h2 { font-size: 1rem; color: var(--azul); font-weight: 700; }
+    .btn-fechar {
+      background: none; border: none; font-size: 1.2rem; cursor: pointer;
+      color: var(--cinza-texto); width: 32px; height: 32px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+    .btn-fechar:hover { background: var(--cinza-bg); }
+    .modal-corpo { padding: 20px 24px; }
+    .linha-det {
+      display: flex; gap: 8px; padding: 8px 0;
+      border-bottom: 1px solid var(--cinza-bg); font-size: 0.83rem;
+    }
+    .linha-det:last-child { border-bottom: none; }
+    .linha-det .chave { width: 150px; flex-shrink: 0; color: var(--cinza-texto); font-weight: 600; font-size: 0.77rem; }
+    .linha-det .vv { color: #1e293b; word-break: break-word; }
+
+    /* ── TOAST ── */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
+    .toast {
+      background: #1e293b; color: var(--branco); border-radius: var(--radius-sm);
+      padding: 12px 18px; font-size: 0.83rem; font-weight: 600;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2); max-width: 320px;
+      animation: slideIn 0.3s ease;
+    }
+    .toast.sucesso { border-left: 4px solid var(--verde); }
+    .toast.erro    { border-left: 4px solid var(--vermelho); }
+    @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .header-tabs { gap: 0; }
+      .tab-btn { padding: 18px 12px; font-size: 0.8rem; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .col-span-2, .col-span-3 { grid-column: span 1; }
+      .resumo-metricas { grid-template-columns: 1fr 1fr; }
+      .card-nota { grid-template-columns: 1fr; }
+      .nota-num { display: none; }
+      .header-user .user-chip { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-overlay">
+  <div class="loading-logo">CC</div>
+  <div class="loading-spinner"></div>
+</div>
+
+<!-- TELA CRIAR SENHA (convite / recuperação) -->
+<div id="tela-criar-senha" style="display:none; min-height:100vh; background:linear-gradient(135deg,var(--azul) 0%,var(--azul-claro) 100%); align-items:center; justify-content:center; padding:24px;">
+  <div class="card-login">
+    <div class="login-logo">CC</div>
+    <h2 id="titulo-criar-senha">Criar sua senha</h2>
+    <p class="sub" id="sub-criar-senha">Defina uma senha para acessar o portal CECON</p>
+    <div class="campo-form">
+      <label>Nova senha</label>
+      <input type="password" id="nova-senha" placeholder="Mínimo 8 caracteres" onkeydown="if(event.key==='Enter')definirSenha()" />
+    </div>
+    <div class="campo-form">
+      <label>Confirmar senha</label>
+      <input type="password" id="confirmar-senha" placeholder="Repita a senha" onkeydown="if(event.key==='Enter')definirSenha()" />
+    </div>
+    <button class="btn-entrar" id="btn-criar-senha" onclick="definirSenha()">
+      <span id="btn-criar-txt">Confirmar e Entrar</span>
+    </button>
+    <div class="msg-erro" id="msg-criar-erro"></div>
+    <div class="login-link" style="margin-top:16px;">
+      Dúvidas? <a href="mailto:pessoal@ceconcontabilidade.com">pessoal@ceconcontabilidade.com</a>
+    </div>
+  </div>
+</div>
+
+<!-- TELA DE LOGIN -->
+<div id="tela-login">
+  <div class="card-login">
+    <div class="login-logo">CC</div>
+    <h2>CECON Soluções Contábeis</h2>
+    <p class="sub">Acesse o seu portal de NFS-e</p>
+
+    <div class="campo-form">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com.br" onkeydown="if(event.key==='Enter')fazerLogin()" autocomplete="email" />
+    </div>
+    <div class="campo-form">
+      <label>Senha</label>
+      <input type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()" autocomplete="current-password" />
+    </div>
+
+    <button class="btn-entrar" id="btn-entrar" onclick="fazerLogin()">
+      <span id="btn-entrar-txt">Entrar</span>
+    </button>
+    <div class="msg-erro" id="msg-login-erro"></div>
+
+    <button class="btn-esqueci" onclick="recuperarSenha()">Esqueci minha senha</button>
+
+    <div class="login-link">
+      Dúvidas? <a href="mailto:pessoal@ceconcontabilidade.com">pessoal@ceconcontabilidade.com</a>
+    </div>
+  </div>
+</div>
+
+<!-- TELA PRINCIPAL -->
+<div id="tela-principal">
+
+  <header>
+    <div class="header-logo">
+      <div class="logo-c">CC</div>
+      <div class="logo-txt">
+        <h1>CECON</h1>
+        <p>Portal NFS-e</p>
+      </div>
+    </div>
+
+    <div class="header-tabs">
+      <button class="tab-btn ativo" onclick="mudarTab('solicitar', this)">📝 Solicitar NFS-e</button>
+      <button class="tab-btn" onclick="mudarTab('acompanhar', this)">📋 Minhas NFS-e</button>
+    </div>
+
+    <div class="header-user">
+      <div class="user-chip" id="user-chip">🏢 —</div>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </header>
+
+  <!-- TAB: SOLICITAR NFS-e -->
+  <div id="tab-solicitar" class="tab-conteudo ativo">
+    <div class="form-area">
+
+      <!-- CARD: Tomador -->
+      <div class="card">
+        <div class="section-header">
+          <div class="section-icon">🏢</div>
+          <div>
+            <h2>Dados do Tomador do Serviço</h2>
+            <p>Quem está contratando / recebendo a nota</p>
+          </div>
+        </div>
+        <div class="card-corpo">
+          <div class="campo" style="margin-bottom:16px;">
+            <label>Tipo de Tomador <span class="obrig">*</span></label>
+            <div class="tipo-grupo">
+              <div class="tipo-opcao">
+                <input type="radio" name="tipo_tomador" id="tipo-pj" value="pj" checked onchange="alternarTipo()" />
+                <label for="tipo-pj"><span class="icone">🏢</span> Pessoa Jurídica (CNPJ)</label>
+              </div>
+              <div class="tipo-opcao">
+                <input type="radio" name="tipo_tomador" id="tipo-pf" value="pf" onchange="alternarTipo()" />
+                <label for="tipo-pf"><span class="icone">👤</span> Pessoa Física (CPF)</label>
+              </div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="campo col-span-2">
+              <label>Nome / Razão Social <span class="obrig">*</span></label>
+              <input type="text" id="nome_tomador" placeholder="Nome ou razão social completa" />
+              <div class="msg-campo-erro" id="err-nome_tomador">Campo obrigatório.</div>
+            </div>
+            <div class="campo" id="grupo-cnpj">
+              <label>CNPJ <span class="obrig">*</span></label>
+              <input type="text" id="cnpj_cpf" placeholder="00.000.000/0001-00" maxlength="18" oninput="mascaraCNPJ(this)" onblur="validarCNPJ()" />
+              <div class="msg-campo-erro" id="err-cnpj_cpf">CNPJ inválido.</div>
+            </div>
+            <div class="campo" id="grupo-cpf" style="display:none;">
+              <label>CPF <span class="obrig">*</span></label>
+              <input type="text" id="cpf_campo" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)" />
+              <div class="msg-campo-erro" id="err-cpf_campo">CPF inválido.</div>
+            </div>
+            <div class="campo" id="grupo-ie">
+              <label>Inscrição Estadual</label>
+              <input type="text" id="ie_tomador" placeholder="Opcional" />
+            </div>
+            <div class="campo">
+              <label>E-mail do Tomador</label>
+              <input type="email" id="email_tomador" placeholder="contato@empresa.com.br" />
+            </div>
+            <div class="campo">
+              <label>Telefone</label>
+              <input type="text" id="telefone" placeholder="(34) 99999-9999" maxlength="15" oninput="mascaraTel(this)" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD: Endereço -->
+      <div class="card">
+        <div class="section-header">
+          <div class="section-icon">📍</div>
+          <div>
+            <h2>Endereço do Tomador</h2>
+            <p>Endereço para constar na nota fiscal</p>
+          </div>
+        </div>
+        <div class="card-corpo">
+          <div class="grid-3">
+            <div class="campo">
+              <label>CEP <span class="obrig">*</span></label>
+              <input type="text" id="cep" placeholder="00000-000" maxlength="9" oninput="mascaraCEP(this)" onblur="buscarCEP()" />
+              <div class="msg-campo-erro" id="err-cep">CEP inválido.</div>
+            </div>
+            <div class="campo col-span-2">
+              <label>Logradouro <span class="obrig">*</span></label>
+              <input type="text" id="logradouro" placeholder="Rua, Avenida, etc." />
+            </div>
+            <div class="campo">
+              <label>Número <span class="obrig">*</span></label>
+              <input type="text" id="numero" placeholder="123" />
+            </div>
+            <div class="campo">
+              <label>Complemento</label>
+              <input type="text" id="complemento" placeholder="Sala, Apto..." />
+            </div>
+            <div class="campo">
+              <label>Bairro <span class="obrig">*</span></label>
+              <input type="text" id="bairro" placeholder="Bairro" />
+            </div>
+            <div class="campo col-span-2">
+              <label>Cidade <span class="obrig">*</span></label>
+              <input type="text" id="cidade" placeholder="Cidade" />
+            </div>
+            <div class="campo">
+              <label>Estado <span class="obrig">*</span></label>
+              <input type="text" id="estado" placeholder="UF" maxlength="2" style="text-transform:uppercase;" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD: Nota -->
+      <div class="card">
+        <div class="section-header">
+          <div class="section-icon">📄</div>
+          <div>
+            <h2>Dados da Nota Fiscal</h2>
+            <p>Informações sobre o serviço prestado</p>
+          </div>
+        </div>
+        <div class="card-corpo">
+          <div class="grid-2">
+            <div class="campo">
+              <label>Data de Competência <span class="obrig">*</span></label>
+              <input type="date" id="data_competencia" />
+              <div class="dica">Informe o dia/mês/ano da prestação do serviço.</div>
+              <div class="msg-campo-erro" id="err-data_competencia">Campo obrigatório.</div>
+            </div>
+            <div class="campo">
+              <label>Valor do Serviço (R$) <span class="obrig">*</span></label>
+              <div class="valor-input-wrap">
+                <span class="valor-prefix">R$</span>
+                <input type="text" id="valor" placeholder="0,00" oninput="mascaraValor(this)" />
+              </div>
+              <div class="msg-campo-erro" id="err-valor">Informe um valor válido.</div>
+            </div>
+            <div class="campo col-span-2">
+              <label>Descrição do Serviço <span class="obrig">*</span></label>
+              <textarea id="descricao" placeholder="Descreva o serviço prestado conforme constará na nota..." rows="3"></textarea>
+              <div class="msg-campo-erro" id="err-descricao">Campo obrigatório.</div>
+            </div>
+            <div class="campo col-span-2">
+              <label>E-mail para receber a NFS-e <span class="obrig">*</span></label>
+              <input type="email" id="email_notificacao" placeholder="email@empresa.com.br" />
+              <div class="dica">Você receberá uma notificação quando a nota for emitida.</div>
+              <div class="msg-campo-erro" id="err-email_notificacao">E-mail inválido.</div>
+            </div>
+            <div class="campo col-span-2">
+              <label>Observações</label>
+              <textarea id="observacoes" placeholder="Informações adicionais (opcional)..." rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ESTADO: Enviando -->
+      <div class="progresso-envio" id="progresso-envio">
+        <div class="spinner-envio"></div>
+        <p style="font-weight:600;color:var(--azul);">Enviando solicitação…</p>
+        <p style="font-size:0.8rem;color:var(--cinza-texto);margin-top:6px;">Aguarde, estamos processando seu pedido.</p>
+      </div>
+
+      <!-- ESTADO: Sucesso -->
+      <div class="sucesso-card" id="sucesso-card">
+        <div class="icone-ok">✅</div>
+        <h3>Solicitação enviada com sucesso!</h3>
+        <div class="protocolo-gerado" id="protocolo-gerado">—</div>
+        <p>Sua solicitação foi recebida pela equipe CECON.<br/>Você será notificado por e-mail quando a NFS-e for emitida (prazo: até 48h úteis).</p>
+        <button class="btn-nova" onclick="novaSolicitacao()">+ Nova Solicitação</button>
+      </div>
+
+      <!-- BOTÃO ENVIAR -->
+      <div id="btn-enviar-wrap">
+        <button class="btn-enviar" id="btn-enviar" onclick="enviarFormulario()">
+          📤 Enviar Solicitação
+        </button>
+      </div>
+
+    </div>
+  </div><!-- /tab-solicitar -->
+
+  <!-- TAB: MINHAS NFS-e -->
+  <div id="tab-acompanhar" class="tab-conteudo">
+    <div class="acomp-area">
+
+      <!-- MÉTRICAS -->
+      <div class="resumo-metricas">
+        <div class="card-metric">
+          <div class="icon-m">📋</div>
+          <div class="val" id="met-total">—</div>
+          <div class="lbl">Notas este mês</div>
+        </div>
+        <div class="card-metric">
+          <div class="icon-m">✅</div>
+          <div class="val" id="met-emitidas">—</div>
+          <div class="lbl">Emitidas</div>
+        </div>
+        <div class="card-metric">
+          <div class="icon-m">⏳</div>
+          <div class="val" id="met-pendentes">—</div>
+          <div class="lbl">Em andamento</div>
+        </div>
+        <div class="card-metric">
+          <div class="icon-m">💰</div>
+          <div class="val" id="met-valor">—</div>
+          <div class="lbl">Volume total mês</div>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="filtros-bar">
+        <label>Status:</label>
+        <select id="f-status" onchange="filtrarNotas()">
+          <option value="">Todos</option>
+          <option value="pendente">Recebida</option>
+          <option value="validada">Em validação</option>
+          <option value="emitida">Emitida</option>
+          <option value="entregue">Entregue</option>
+          <option value="erro">Atenção necessária</option>
+        </select>
+        <label>Mês:</label>
+        <select id="f-mes" onchange="filtrarNotas()">
+          <option value="">Todos</option>
+          <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+          <option value="03">Março</option><option value="04">Abril</option>
+          <option value="05">Maio</option><option value="06">Junho</option>
+          <option value="07">Julho</option><option value="08">Agosto</option>
+          <option value="09">Setembro</option><option value="10">Outubro</option>
+          <option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+      </div>
+
+      <!-- LISTA -->
+      <div class="lista-notas" id="lista-notas"></div>
+      <div class="paginacao" id="paginacao"></div>
+
+    </div>
+  </div><!-- /tab-acompanhar -->
+
+</div><!-- /tela-principal -->
+
+<!-- MODAL DETALHES -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)fecharModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Detalhes da Nota</h2>
+      <button class="btn-fechar" onclick="fecharModal()">✕</button>
+    </div>
+    <div class="modal-corpo" id="modal-corpo"></div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   CONFIGURAÇÃO — ajuste apenas GOTRUE_URL após deploy
+════════════════════════════════════════════════════════ */
+const CFG = {
+  // ⚠ Atualizar com a URL do seu site Netlify após deploy
+  GOTRUE_URL:  'https://portal-cecon.netlify.app/.netlify/identity',
+  WEBHOOK_URL: 'https://hook.us2.make.com/cvzqttclnjid93jgvgbc8v37svptsl9v',
+  AT_BASE:     'appG8XSVHf40njzZb',
+  AT_TABLE:    'tblVViThfIwUO3Hb5',
+  AT_PAT:      'patXqiKCHwQt0tTV4.fc9e1e3370b9f0803ec165a8e19d3642cf689341d65b56b43b2d49fcc6fb0f68',
+  AT_F: {
+    PROTOCOLO:   'fldvVVJkZgTnYycj0',
+    NOME_TOM:    'fld3LruCQSXDLGBnO',
+    CNPJ_CPF:    'fldTIGVJCfWyjqTlr',
+    EMAIL_TOM:   'fldlYftQSniygCEH3',
+    DATA_COMP:   'fldcFnV8Estxeda05',
+    VALOR:       'fldwhB4xACR8UY5P2',
+    DESCRICAO:   'fldxemNqVMNYN1NMw',
+    EMAIL_NOTIF: 'fldj6upojW1M7Z7IC',
+    STATUS:      'fldxh8LhDp3qt48O7',
+    TIMESTAMP:   'fld3uZG4hp6kvZ056',
+    DATA_EMISS:  'fldUx8n8ePX0Nfou8',
+    OBS_ERRO:    'fld2VA3L4bezA7cxz',
+    NUMERO_NF:   'fldrmjLJ7rQ6K9mPM',
+    LINK_NF:     'fld3vvdZwPkBjKNzP',
+    EMP_CLIENTE: 'fldX0jFHNl5kTHY19',
+  },
+  AT_STATUS: { 'Recebida':'pendente','Validada':'validada','Emitida':'emitida','Entregue':'entregue','Erro':'erro' },
+};
+
+/* ═══════════════════════════════════════════════════════
+   AUTENTICAÇÃO — GoTrue REST API (fetch direto, sem CDN)
+════════════════════════════════════════════════════════ */
+const GT = CFG.GOTRUE_URL;
+let USUARIO = null, ACCESS_TOKEN = null;
+
+async function iniciarAuth() {
+  // 1. Verifica token de convite/recuperação na URL
+  if (verificarTokenURL()) return;
+
+  // 2. Verifica sessão salva
+  try {
+    const s = JSON.parse(localStorage.getItem('cecon_auth') || 'null');
+    if (s && s.access_token && s.expires_at > Date.now()) {
+      ACCESS_TOKEN = s.access_token;
+      USUARIO      = s.user;
+      ocultarLoading();
+      acessarPortal();
+      return;
+    }
+  } catch {}
+
+  ocultarLoading();
+  mostrarLogin();
+}
+
+var TOKEN_URL = null;
+var TIPO_URL  = null;
+
+function verificarTokenURL() {
+  const hash = window.location.hash.substring(1);
+  console.log('=== verificarTokenURL hash:', hash.substring(0,80));
+  if (!hash) return false;
+  const p     = new URLSearchParams(hash);
+  const tipo  = p.get('type');
+  const token = p.get('invite_token') || p.get('recovery_token') || p.get('token');
+  console.log('tipo:', tipo, '| token:', token ? token.substring(0,20)+'…' : 'NULO');
+  if (!token) return false;
+
+  // salvar globalmente para uso em definirSenha()
+  TOKEN_URL = token;
+  TIPO_URL  = (tipo === 'recovery' || p.get('recovery_token')) ? 'recovery' : 'invite';
+
+  ocultarLoading();
+
+  if (tipo === 'invite' || p.get('invite_token')) {
+    document.getElementById('titulo-criar-senha').textContent = 'Criar sua senha';
+    document.getElementById('sub-criar-senha').textContent   = 'Bem-vinda ao portal CECON! Defina uma senha para acessar.';
+    document.getElementById('btn-criar-txt').textContent     = 'Confirmar e Entrar';
+  } else if (tipo === 'recovery' || p.get('recovery_token')) {
+    document.getElementById('titulo-criar-senha').textContent = 'Redefinir senha';
+    document.getElementById('sub-criar-senha').textContent   = 'Digite sua nova senha para recuperar o acesso.';
+    document.getElementById('btn-criar-txt').textContent     = 'Salvar nova senha';
+  } else {
+    return false;
+  }
+
+  document.getElementById('tela-criar-senha').style.display = 'flex';
+  return true;
+}
+
+async function definirSenha() {
+  const hash   = window.location.hash.substring(1);
+  const p      = new URLSearchParams(hash);
+  const tipo   = p.get('type');
+  const token  = p.get('invite_token') || p.get('recovery_token') || p.get('token');
+  const senha  = document.getElementById('nova-senha').value;
+  const conf   = document.getElementById('confirmar-senha').value;
+  const erroEl = document.getElementById('msg-criar-erro');
+  const btnEl  = document.getElementById('btn-criar-senha');
+  const txtEl  = document.getElementById('btn-criar-txt');
+
+  erroEl.classList.remove('vis');
+  if (senha.length < 8) { erroEl.textContent = 'A senha deve ter pelo menos 8 caracteres.'; erroEl.classList.add('vis'); return; }
+  if (senha !== conf)   { erroEl.textContent = 'As senhas não coincidem.'; erroEl.classList.add('vis'); return; }
+
+  btnEl.disabled = true; txtEl.textContent = 'Aguarde…';
+
+  try {
+    // usar token salvo globalmente (mais confiável que reler o hash)
+    const tipoVerify = TIPO_URL || ((tipo === 'recovery' || p.get('recovery_token')) ? 'recovery' : 'invite');
+    const tokenFinal = TOKEN_URL || token;
+    console.log('=== definirSenha ===');
+    console.log('hash agora:', window.location.hash.substring(0,80));
+    console.log('TOKEN_URL:', TOKEN_URL ? TOKEN_URL.substring(0,20)+'…' : 'NULO');
+    console.log('tokenFinal:', tokenFinal ? tokenFinal.substring(0,20)+'…' : 'NULO');
+    console.log('tipoVerify:', tipoVerify);
+    // Endpoint correto do GoTrue para convite e recuperação
+    const resp = await fetch(GT + '/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token:    tokenFinal,
+        type:     tipoVerify === 'invite' ? 'signup' : 'recovery',
+        password: senha
+      })
+    });
+    let data = {};
+    try { data = await resp.json(); } catch(je) { data = {}; }
+    console.log('Token response:', resp.status, JSON.stringify(data).substring(0,200));
+    if (!resp.ok) throw new Error(data.error_description || data.msg || data.message || 'HTTP ' + resp.status);
+
+    ACCESS_TOKEN = data.access_token;
+    USUARIO      = data.user || { email: '', user_metadata: {} };
+    salvarSessao(data);
+
+    window.location.hash = '';
+    document.getElementById('tela-criar-senha').style.display = 'none';
+    mostrarToast('✓ Senha criada! Bem-vinda ao portal CECON.', 'sucesso');
+    acessarPortal();
+  } catch(e) {
+    console.error('definirSenha erro:', e.message);
+    erroEl.textContent = 'Erro: ' + e.message;
+    erroEl.classList.add('vis');
+    btnEl.disabled = false; txtEl.textContent = 'Confirmar e Entrar';
+  }
+}
+
+async function fazerLogin() {
+  const email  = document.getElementById('login-email').value.trim();
+  const senha  = document.getElementById('login-senha').value;
+  const erroEl = document.getElementById('msg-login-erro');
+  const btnEl  = document.getElementById('btn-entrar');
+  const txtEl  = document.getElementById('btn-entrar-txt');
+
+  erroEl.classList.remove('vis');
+  if (!email || !senha) {
+    erroEl.textContent = 'Preencha e-mail e senha.';
+    erroEl.classList.add('vis');
+    return;
+  }
+
+  btnEl.disabled = true;
+  txtEl.textContent = 'Entrando…';
+
+  try {
+    const resp = await fetch(GT + '/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'grant_type=password&username=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(senha)
+    });
+    let data = {};
+    try { data = await resp.json(); } catch {}
+    if (!resp.ok) throw new Error(data.error_description || data.msg || 'E-mail ou senha incorretos.');
+
+    ACCESS_TOKEN = data.access_token;
+    USUARIO      = data.user;
+    salvarSessao(data);
+    acessarPortal();
+  } catch(e) {
+    erroEl.textContent = e.message || 'E-mail ou senha incorretos.';
+    erroEl.classList.add('vis');
+    btnEl.disabled = false;
+    txtEl.textContent = 'Entrar';
+  }
+}
+
+async function recuperarSenha() {
+  const email  = document.getElementById('login-email').value.trim();
+  const erroEl = document.getElementById('msg-login-erro');
+  erroEl.classList.remove('vis');
+
+  if (!email) {
+    erroEl.textContent = 'Digite seu e-mail acima para recuperar a senha.';
+    erroEl.classList.add('vis');
+    return;
+  }
+  try {
+    const resp = await fetch(GT + '/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    if (!resp.ok) throw new Error('Erro ao enviar e-mail de recuperação.');
+    mostrarToast('📧 E-mail de recuperação enviado!', 'sucesso');
+  } catch(e) {
+    erroEl.textContent = e.message;
+    erroEl.classList.add('vis');
+  }
+}
+
+function carregarSessao() {
+  try {
+    const s = JSON.parse(localStorage.getItem('cecon_auth') || 'null');
+    if (s && s.access_token && s.expires_at > Date.now()) return s;
+  } catch {}
+  return null;
+}
+
+function salvarSessao(data) {
+  localStorage.setItem('cecon_auth', JSON.stringify({
+    access_token:  data.access_token,
+    refresh_token: data.refresh_token,
+    expires_at:    Date.now() + ((data.expires_in || 3600) * 1000),
+    user:          data.user || USUARIO
+  }));
+}
+
+async function sair() {
+  try {
+    if (ACCESS_TOKEN) await fetch(GT + '/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN } });
+  } catch {}
+  ACCESS_TOKEN = null; USUARIO = null; MINHAS_NOTAS = [];
+  localStorage.removeItem('cecon_auth');
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-senha').value = '';
+  if (window.netlifyIdentity) window.netlifyIdentity.logout();
+  mostrarLogin();
+}
+
+function mostrarLogin() {
+  ocultarLoading();
+  document.getElementById('tela-login').classList.add('vis');
+  document.getElementById('tela-principal').classList.remove('vis');
+}
+
+async function acessarPortal() {
+  ocultarLoading();
+  document.getElementById('tela-login').classList.remove('vis');
+  document.getElementById('tela-principal').classList.add('vis');
+
+  // Sempre busca os dados frescos do usuário para garantir que o e-mail está presente
+  try {
+    const r = await fetch(GT + '/user', {
+      headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN }
+    });
+    if (r.ok) {
+      const userData = await r.json();
+      USUARIO = Object.assign({}, USUARIO, userData);
+      // Atualiza sessão salva com dados frescos
+      try {
+        const s = JSON.parse(localStorage.getItem('cecon_auth') || '{}');
+        s.user = USUARIO;
+        localStorage.setItem('cecon_auth', JSON.stringify(s));
+      } catch {}
+    }
+  } catch(e) { console.warn('Não foi possível atualizar dados do usuário:', e); }
+
+  const nome = USUARIO?.user_metadata?.nome || USUARIO?.user_metadata?.full_name || USUARIO?.email?.split('@')[0] || 'Cliente';
+  document.getElementById('user-chip').textContent = '🏢 ' + nome;
+  // Pre-preencher email de notificação com o e-mail do usuário logado
+  document.getElementById('email_notificacao').value = USUARIO?.email || '';
+  // Carregar notas do cliente
+  carregarMinhasNotas();
+}
+
+function ocultarLoading() {
+  const ov = document.getElementById('loading-overlay');
+  ov.classList.add('fade');
+  setTimeout(() => ov.style.display = 'none', 400);
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABS
+════════════════════════════════════════════════════════ */
+function mudarTab(id, btn) {
+  document.querySelectorAll('.tab-conteudo').forEach(t => t.classList.remove('ativo'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('ativo'));
+  document.getElementById('tab-' + id).classList.add('ativo');
+  btn.classList.add('ativo');
+  if (id === 'acompanhar' && MINHAS_NOTAS.length === 0) carregarMinhasNotas();
+}
+
+/* ═══════════════════════════════════════════════════════
+   FORMULÁRIO — VALIDAÇÃO E ENVIO
+════════════════════════════════════════════════════════ */
+function alternarTipo() {
+  const pj = document.querySelector('[name=tipo_tomador]:checked').value === 'pj';
+  document.getElementById('grupo-cnpj').style.display = pj ? '' : 'none';
+  document.getElementById('grupo-cpf').style.display  = pj ? 'none' : '';
+  document.getElementById('grupo-ie').style.display   = pj ? '' : 'none';
+}
+
+function mascaraCNPJ(el) {
+  let v = el.value.replace(/\D/g,'');
+  v = v.replace(/^(\d{2})(\d)/,'$1.$2');
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3');
+  v = v.replace(/\.(\d{3})(\d)/,'.$1/$2');
+  v = v.replace(/(\d{4})(\d)/,'$1-$2');
+  el.value = v.substring(0,18);
+}
+function mascaraCPF(el) {
+  let v = el.value.replace(/\D/g,'');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  el.value = v.substring(0,14);
+}
+function mascaraTel(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (v.length <= 10) v = v.replace(/(\d{2})(\d{4})(\d*)/,'($1) $2-$3');
+  else v = v.replace(/(\d{2})(\d{5})(\d*)/,'($1) $2-$3');
+  el.value = v.substring(0,15);
+}
+function mascaraCEP(el) {
+  let v = el.value.replace(/\D/g,'');
+  el.value = v.replace(/(\d{5})(\d)/,'$1-$2').substring(0,9);
+}
+function mascaraValor(el) {
+  let v = el.value.replace(/\D/g,'');
+  v = (parseInt(v||'0',10)/100).toFixed(2);
+  el.value = parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2});
+}
+
+function validarCNPJ() {
+  const val = document.getElementById('cnpj_cpf').value.replace(/\D/g,'');
+  const campo = document.getElementById('cnpj_cpf');
+  const err = document.getElementById('err-cnpj_cpf');
+  if (!val) return;
+  const ok = val.length === 14;
+  campo.classList.toggle('erro-campo', !ok);
+  err.classList.toggle('vis', !ok);
+}
+
+async function buscarCEP() {
+  const cep = document.getElementById('cep').value.replace(/\D/g,'');
+  if (cep.length !== 8) return;
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d = await r.json();
+    if (d.erro) throw new Error('CEP não encontrado');
+    document.getElementById('logradouro').value = d.logradouro || '';
+    document.getElementById('bairro').value     = d.bairro     || '';
+    document.getElementById('cidade').value     = d.localidade || '';
+    document.getElementById('estado').value     = d.uf         || '';
+    document.getElementById('numero').focus();
+  } catch { document.getElementById('err-cep').classList.add('vis'); }
+}
+
+function gerarProtocolo() {
+  const agora = new Date();
+  const yy = String(agora.getFullYear()).slice(-2);
+  const mm = String(agora.getMonth()+1).padStart(2,'0');
+  const dd = String(agora.getDate()).padStart(2,'0');
+  const seq = String(Math.floor(Math.random()*9000)+1000);
+  return `CECON-${yy}${mm}${dd}-${seq}`;
+}
+
+function validarForm() {
+  const obrig = ['nome_tomador','cep','logradouro','numero','bairro','cidade','estado','data_competencia','valor','descricao','email_notificacao'];
+  let ok = true;
+  obrig.forEach(id => {
+    const el = document.getElementById(id);
+    const err = document.getElementById('err-'+id);
+    if (!el.value.trim()) {
+      el.classList.add('erro-campo');
+      if (err) err.classList.add('vis');
+      ok = false;
+    } else {
+      el.classList.remove('erro-campo');
+      if (err) err.classList.remove('vis');
+    }
+  });
+  const tipo = document.querySelector('[name=tipo_tomador]:checked').value;
+  const docId = tipo === 'pj' ? 'cnpj_cpf' : 'cpf_campo';
+  const docEl = document.getElementById(docId);
+  if (!docEl.value.trim()) {
+    docEl.classList.add('erro-campo'); ok = false;
+  }
+  return ok;
+}
+
+async function enviarFormulario() {
+  if (!validarForm()) {
+    mostrarToast('⚠ Preencha todos os campos obrigatórios.', 'erro');
+    document.querySelector('.erro-campo')?.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+
+  const tipo  = document.querySelector('[name=tipo_tomador]:checked').value;
+  const docId = tipo === 'pj' ? 'cnpj_cpf' : 'cpf_campo';
+  const protocolo = gerarProtocolo();
+
+  const payload = {
+    protocolo,
+    nome_tomador:     document.getElementById('nome_tomador').value.trim(),
+    tipo_tomador:     tipo === 'pf' ? 'PF' : 'PJ',
+    doc_tomador:      document.getElementById(docId).value.trim(),
+    ie_tomador:       document.getElementById('ie_tomador')?.value.trim() || '',
+    email_tomador:    document.getElementById('email_tomador').value.trim(),
+    telefone:         document.getElementById('telefone').value.trim(),
+    cep:              document.getElementById('cep').value.trim(),
+    logradouro:       document.getElementById('logradouro').value.trim(),
+    numero:           document.getElementById('numero').value.trim(),
+    complemento:      document.getElementById('complemento').value.trim(),
+    bairro:           document.getElementById('bairro').value.trim(),
+    cidade:           document.getElementById('cidade').value.trim(),
+    estado:           document.getElementById('estado').value.trim().toUpperCase(),
+    data_competencia: document.getElementById('data_competencia').value,
+    valor:            parseFloat(document.getElementById('valor').value.replace(/\./g,'').replace(',','.'))||0,
+    descricao:        document.getElementById('descricao').value.trim(),
+    email_notificacao:document.getElementById('email_notificacao').value.trim(),
+    observacoes:      document.getElementById('observacoes').value.trim(),
+    nome_cliente:     USUARIO?.user_metadata?.nome || USUARIO?.user_metadata?.full_name || USUARIO?.email || '',
+    timestamp:        new Date().toISOString(),
+  };
+
+  document.getElementById('btn-enviar-wrap').style.display = 'none';
+  document.querySelectorAll('.card').forEach(c => c.style.display = 'none');
+  document.getElementById('progresso-envio').classList.add('vis');
+
+  let tentativas = 3, sucesso = false;
+  for (let i = 1; i <= tentativas; i++) {
+    try {
+      const ctrl = new AbortController();
+      const tid  = setTimeout(() => ctrl.abort(), 12000);
+      const r    = await fetch(CFG.WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+      clearTimeout(tid);
+      if (r.ok || r.status === 200 || r.status === 204) { sucesso = true; break; }
+    } catch(e) {
+      if (i === tentativas) break;
+      await new Promise(res => setTimeout(res, 1000 * i));
+    }
+  }
+
+  document.getElementById('progresso-envio').classList.remove('vis');
+
+  if (sucesso) {
+    document.getElementById('protocolo-gerado').textContent = protocolo;
+    document.getElementById('sucesso-card').classList.add('vis');
+    // Recarregar minhas notas em background
+    setTimeout(carregarMinhasNotas, 3000);
+  } else {
+    document.querySelectorAll('.card').forEach(c => c.style.display = '');
+    document.getElementById('btn-enviar-wrap').style.display = '';
+    mostrarToast('⚠ Erro ao enviar. Verifique sua conexão e tente novamente.', 'erro');
+  }
+}
+
+function novaSolicitacao() {
+  document.getElementById('sucesso-card').classList.remove('vis');
+  document.querySelectorAll('.card').forEach(c => c.style.display = '');
+  document.getElementById('btn-enviar-wrap').style.display = '';
+  // Limpar formulário
+  ['nome_tomador','cnpj_cpf','cpf_campo','ie_tomador','email_tomador','telefone',
+   'cep','logradouro','numero','complemento','bairro','cidade','estado',
+   'data_competencia','valor','descricao','observacoes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('erro-campo'); }
+  });
+  document.getElementById('email_notificacao').value = USUARIO?.email || '';
+  document.getElementById('tipo-pj').checked = true;
+  alternarTipo();
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACOMPANHAMENTO — dados Airtable
+════════════════════════════════════════════════════════ */
+let MINHAS_NOTAS = [], NOTAS_FILTRADAS = [], pgAtual = 1;
+const POR_PG = 8;
+
+async function carregarMinhasNotas() {
+  if (!USUARIO?.email) return;
+  const emailUsuario = USUARIO.email.toLowerCase();
+  try {
+    let todos = [], offset = '';
+    do {
+      const url = new URL(`https://api.airtable.com/v0/${CFG.AT_BASE}/${CFG.AT_TABLE}`);
+      url.searchParams.set('returnFieldsByFieldId', 'true');
+      url.searchParams.set('sort[0][field]', CFG.AT_F.TIMESTAMP);
+      url.searchParams.set('sort[0][direction]', 'desc');
+      if (offset) url.searchParams.set('offset', offset);
+      const r = await fetch(url.toString(), { headers: { 'Authorization': `Bearer ${CFG.AT_PAT}` } });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      todos = todos.concat(d.records || []);
+      offset = d.offset || '';
+    } while (offset);
+
+    MINHAS_NOTAS = todos
+      .filter(rec => {
+        const f = rec.fields;
+        const en = (f[CFG.AT_F.EMAIL_NOTIF] || '').toLowerCase();
+        const et = (f[CFG.AT_F.EMAIL_TOM]   || '').toLowerCase();
+        const ec = (f[CFG.AT_F.EMP_CLIENTE] || '').toLowerCase();
+        return en === emailUsuario || et === emailUsuario || ec === emailUsuario;
+      })
+      .map(rec => {
+        const f = rec.fields;
+        return {
+          protocolo:   f[CFG.AT_F.PROTOCOLO]  || '',
+          nome_tom:    f[CFG.AT_F.NOME_TOM]    || '',
+          doc_tom:     f[CFG.AT_F.CNPJ_CPF]    || '',
+          data_comp:   f[CFG.AT_F.DATA_COMP]   || '',
+          valor:       Number(f[CFG.AT_F.VALOR]||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+          descricao:   f[CFG.AT_F.DESCRICAO]   || '',
+          status:      CFG.AT_STATUS[f[CFG.AT_F.STATUS]] || 'pendente',
+          timestamp:   f[CFG.AT_F.TIMESTAMP]   || rec.createdTime || '',
+          data_emiss:  f[CFG.AT_F.DATA_EMISS]  || '',
+          obs_erro:    f[CFG.AT_F.OBS_ERRO]    || '',
+          link_nf:     f[CFG.AT_F.LINK_NF]     || '',
+        };
+      });
+    filtrarNotas();
+    atualizarMetricas();
+  } catch(e) {
+    console.error('Erro Airtable:', e);
+    mostrarToast('⚠ Erro ao carregar notas. Tente atualizar a página.', 'erro');
+  }
+}
+
+function filtrarNotas() {
+  const status = document.getElementById('f-status').value;
+  const mes    = document.getElementById('f-mes').value;
+  NOTAS_FILTRADAS = MINHAS_NOTAS.filter(n => {
+    if (status && n.status !== status) return false;
+    if (mes && n.timestamp && !n.timestamp.includes('-' + mes + '-')) return false;
+    return true;
+  });
+  pgAtual = 1;
+  renderizarNotas();
+}
+
+function renderizarNotas() {
+  const inicio = (pgAtual - 1) * POR_PG;
+  const pagina = NOTAS_FILTRADAS.slice(inicio, inicio + POR_PG);
+  const lista  = document.getElementById('lista-notas');
+
+  if (NOTAS_FILTRADAS.length === 0) {
+    lista.innerHTML = '<div class="vazio-estado"><div class="icon">📭</div><p>Nenhuma nota encontrada.</p></div>';
+    document.getElementById('paginacao').innerHTML = '';
+    return;
+  }
+
+  lista.innerHTML = pagina.map(function(n) {
+    var podeVer = ['emitida','entregue'].includes(n.status);
+    return '<div class="card-nota ' + n.status + '" onclick="abrirDetalhes(\'' + n.protocolo + '\')">' +
+      '<div class="nota-num">' + n.protocolo + '</div>' +
+      '<div class="nota-info">' +
+        '<div class="nome">' + n.nome_tom + '</div>' +
+        '<div class="desc">' + n.descricao + '</div>' +
+        '<div class="datas">Competência: ' + fmtData(n.data_comp) + ' &nbsp;·&nbsp; Solicitado: ' + fmtDataHora(n.timestamp) +
+          (n.data_emiss ? ' &nbsp;·&nbsp; Emitido: ' + fmtDataHora(n.data_emiss) : '') + '</div>' +
+        '<div class="progresso-steps">' + gerarSteps(n.status) + '</div>' +
+      '</div>' +
+      '<div class="nota-valor"><div class="moeda">R$</div>' + n.valor + '</div>' +
+      '<div class="nota-acoes" onclick="event.stopPropagation()">' +
+        badgeStatus(n.status) +
+        '<button class="btn-ver-nf" ' + (podeVer ? '' : 'disabled') + ' onclick="' +
+          (podeVer ? 'window.open(\'https://www.nfse.gov.br/consumidor/consultar-nfs-e\',\'_blank\')' : '') + '">' +
+          (podeVer ? '📄 Ver NFS-e' : '⏳ Aguardando') +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  renderizarPaginacao();
+}
+
+function atualizarMetricas() {
+  var agora = new Date();
+  var doMes = MINHAS_NOTAS.filter(function(n) {
+    if (!n.timestamp) return false;
+    var d = new Date(n.timestamp);
+    return d.getMonth() === agora.getMonth() && d.getFullYear() === agora.getFullYear();
+  });
+  document.getElementById('met-total').textContent     = doMes.length;
+  document.getElementById('met-emitidas').textContent  = doMes.filter(function(n){ return ['emitida','entregue'].includes(n.status); }).length;
+  document.getElementById('met-pendentes').textContent = doMes.filter(function(n){ return ['pendente','validada'].includes(n.status); }).length;
+  var total = doMes.reduce(function(s, n) {
+    return s + (parseFloat((n.valor || '0').replace(/\./g,'').replace(',','.')) || 0);
+  }, 0);
+  document.getElementById('met-valor').textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits:2});
+}
+
+function renderizarPaginacao() {
+  var paginas = Math.ceil(NOTAS_FILTRADAS.length / POR_PG);
+  var c = document.getElementById('paginacao');
+  if (paginas <= 1) { c.innerHTML = ''; return; }
+  var h = '<button class="pg-btn" onclick="irPg(' + (pgAtual-1) + ')" ' + (pgAtual===1?'disabled':'') + '>‹</button>';
+  for (var p = 1; p <= paginas; p++) {
+    h += '<button class="pg-btn ' + (p===pgAtual?'ativo':'') + '" onclick="irPg(' + p + ')">' + p + '</button>';
+  }
+  h += '<button class="pg-btn" onclick="irPg(' + (pgAtual+1) + ')" ' + (pgAtual===paginas?'disabled':'') + '>›</button>';
+  c.innerHTML = h;
+}
+
+function irPg(p) {
+  var paginas = Math.ceil(NOTAS_FILTRADAS.length / POR_PG);
+  if (p < 1 || p > paginas) return;
+  pgAtual = p;
+  renderizarNotas();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function abrirDetalhes(protocolo) {
+  var n = MINHAS_NOTAS.find(function(x){ return x.protocolo === protocolo; });
+  if (!n) return;
+  var STATUS_LABELS = { pendente:'Recebida', validada:'Em validação', emitida:'Emitida', entregue:'Entregue', erro:'Atenção necessária' };
+  document.getElementById('modal-titulo').textContent = 'Protocolo: ' + protocolo;
+  var html = '<div class="linha-det"><span class="chave">Tomador</span><span class="vv">' + n.nome_tom + '</span></div>' +
+    '<div class="linha-det"><span class="chave">CNPJ / CPF</span><span class="vv">' + n.doc_tom + '</span></div>' +
+    '<div class="linha-det"><span class="chave">Competência</span><span class="vv">' + fmtData(n.data_comp) + '</span></div>' +
+    '<div class="linha-det"><span class="chave">Valor</span><span class="vv" style="font-weight:700;">R$ ' + n.valor + '</span></div>' +
+    '<div class="linha-det"><span class="chave">Descrição</span><span class="vv">' + n.descricao + '</span></div>' +
+    '<hr style="border:none;border-top:1px dashed var(--cinza-borda);margin:10px 0;"/>' +
+    '<div class="linha-det"><span class="chave">Status</span><span class="vv">' + badgeStatus(n.status) + '</span></div>' +
+    '<div class="linha-det"><span class="chave">Solicitado em</span><span class="vv">' + fmtDataHora(n.timestamp) + '</span></div>' +
+    (n.data_emiss ? '<div class="linha-det"><span class="chave">Emitido em</span><span class="vv">' + fmtDataHora(n.data_emiss) + '</span></div>' : '') +
+    (n.obs_erro ? '<div class="linha-det"><span class="chave">⚠ Observação</span><span class="vv" style="color:var(--vermelho);">' + n.obs_erro + '</span></div>' : '');
+  if (n.status === 'erro') {
+    html += '<div style="background:var(--verm-light);border-radius:var(--radius-sm);padding:12px;margin-top:12px;font-size:0.82rem;color:#7f1d1d;"><strong>Ação necessária:</strong> Nossa equipe identificou um problema. Você será contatada em breve. Dúvidas: <a href="mailto:pessoal@ceconcontabilidade.com" style="color:var(--vermelho);">pessoal@ceconcontabilidade.com</a></div>';
+  }
+  if (['emitida','entregue'].includes(n.status)) {
+    html += '<div style="margin-top:16px;text-align:center;"><button class="btn-ver-nf" style="padding:10px 24px;font-size:0.85rem;" onclick="window.open(\'https://www.nfse.gov.br/consumidor/consultar-nfs-e\',\'_blank\')">📄 Acessar NFS-e no Portal gov.br</button></div>';
+  }
+  document.getElementById('modal-corpo').innerHTML = html;
+  document.getElementById('modal-bg').classList.add('aberto');
+}
+
+function fecharModal() { document.getElementById('modal-bg').classList.remove('aberto'); }
+
+function gerarSteps(status) {
+  var etapas = ['pendente','validada','emitida','entregue'];
+  var labels  = { pendente:'Recebida', validada:'Validada', emitida:'Emitida', entregue:'Entregue' };
+  var idx     = etapas.indexOf(status === 'erro' ? 'pendente' : status);
+  return etapas.map(function(e, i) {
+    var cls  = '';
+    if (status === 'erro' && i === 0) cls = 'erro';
+    else if (i < idx) cls = 'ok';
+    else if (i === idx) cls = 'ativo';
+    var icon = cls === 'ok' ? '✓' : (cls === 'erro' ? '✕' : '');
+    var linha = i > 0 ? '<div class="linha-step ' + (i <= idx && status !== 'erro' ? 'ok' : '') + '"></div>' : '';
+    return linha + '<div class="step ' + cls + '" title="' + labels[e] + '"><div class="bolinha">' + icon + '</div></div>';
+  }).join('');
+}
+
+var STATUS_LABELS_G = { pendente:'Recebida', validada:'Em validação', emitida:'Emitida', entregue:'Entregue', erro:'Atenção necessária' };
+function badgeStatus(s) {
+  return '<span class="badge ' + (s === 'erro' ? 'erro' : s) + '">' + (STATUS_LABELS_G[s] || s) + '</span>';
+}
+
+function fmtData(str) {
+  if (!str) return '—';
+  var parts = str.split('-');
+  if (parts.length === 2) return parts[1] + '/' + parts[0];
+  return parts[2] + '/' + parts[1] + '/' + parts[0];
+}
+
+function fmtDataHora(str) {
+  if (!str) return '—';
+  var d = new Date(str);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+}
+
+function mostrarToast(msg, tipo) {
+  tipo = tipo || 'sucesso';
+  var c = document.getElementById('toast-container');
+  var t = document.createElement('div');
+  t.className = 'toast ' + tipo;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(function() {
+    t.style.animation = 'slideIn 0.3s ease reverse';
+    setTimeout(function(){ t.remove(); }, 300);
+  }, 3500);
+}
+
+/* INICIALIZAÇÃO */
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    // Verificar token de convite/recuperação na URL
+    if (verificarTokenURL()) return;
+
+    // Verificar sessão salva no localStorage
+    var sessao = carregarSessao();
+    if (sessao) {
+      USUARIO      = sessao.user;
+      ACCESS_TOKEN = sessao.access_token;
+      ocultarLoading();
+      acessarPortal();
+    } else {
+      ocultarLoading();
+      mostrarLogin();
+    }
+  } catch(e) {
+    console.error('Init error:', e);
+    ocultarLoading();
+    mostrarLogin();
+  }
+});
+</script>
+</body>
+</html>
