@@ -442,7 +442,389 @@
       .nota-num { display: none; }
       .header-user .user-chip { display: none; }
     }
-  </style>
+  
+    :root {
+      --azul:       #1a3c6e;
+      --azul-claro: #2563b0;
+      --verde:      #16a34a;
+      --verde-light:#dcfce7;
+      --vermelho:   #dc2626;
+      --verm-light: #fee2e2;
+      --amarelo:    #d97706;
+      --amar-light: #fef3c7;
+      --cinza-bg:   #f1f5f9;
+      --cinza-borda:#e2e8f0;
+      --cinza-texto:#64748b;
+      --branco:     #ffffff;
+      --sombra:     0 2px 12px rgba(26,60,110,0.08);
+      --radius:     10px;
+      --radius-sm:  7px;
+      --font:       'Segoe UI', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--cinza-bg); color: #1e293b; }
+
+    /* SIDEBAR */
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      background: var(--azul);
+      display: flex; flex-direction: column;
+      padding: 24px 0;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 200;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .logo-c {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--branco); color: var(--azul);
+      font-weight: 800; font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      letter-spacing: -1px; flex-shrink: 0;
+    }
+    .sidebar-logo .nome { color: var(--branco); font-size: 0.85rem; font-weight: 700; line-height: 1.3; }
+    .sidebar-logo .sub  { color: #93c5fd; font-size: 0.7rem; }
+
+    .sidebar nav { margin-top: 20px; flex: 1; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 20px; color: #93c5fd;
+      font-size: 0.85rem; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover, .nav-item.ativo {
+      background: rgba(255,255,255,0.08);
+      color: var(--branco);
+      border-left-color: #60a5fa;
+    }
+    .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+    .sidebar-rodape {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      color: #93c5fd; font-size: 0.72rem;
+    }
+
+    /* CONTEÚDO */
+    .conteudo {
+      margin-left: 220px;
+      flex: 1;
+      display: flex; flex-direction: column;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      background: var(--branco);
+      border-bottom: 1px solid var(--cinza-borda);
+      padding: 14px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar h1 { font-size: 1rem; font-weight: 700; color: var(--azul); }
+    .topbar-direita { display: flex; align-items: center; gap: 12px; }
+    .btn-sm {
+      background: var(--azul-claro); color: var(--branco);
+      border: none; border-radius: var(--radius-sm);
+      padding: 8px 16px; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .btn-sm:hover { opacity: 0.9; }
+    .btn-sm.sec {
+      background: var(--cinza-bg); color: var(--azul);
+      border: 1.5px solid var(--cinza-borda);
+    }
+    .usuario-chip {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; color: var(--cinza-texto);
+    }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--azul-claro); color: var(--branco);
+      font-weight: 700; font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ÁREA PRINCIPAL */
+    .area {
+      padding: 28px;
+      flex: 1;
+    }
+
+    /* MÉTRICAS */
+    .metricas {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metrica {
+      background: var(--branco);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--sombra);
+      border-left: 4px solid transparent;
+    }
+    .metrica.pendente { border-left-color: var(--amarelo); }
+    .metrica.emitida  { border-left-color: var(--verde); }
+    .metrica.erro     { border-left-color: var(--vermelho); }
+    .metrica.total    { border-left-color: var(--azul-claro); }
+    .metrica .label { font-size: 0.72rem; font-weight: 600; color: var(--cinza-texto); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .metrica .valor { font-size: 1.8rem; font-weight: 800; color: #1e293b; }
+    .metrica .sub   { font-size: 0.72rem; color: var(--cinza-texto); margin-top: 4px; }
+
+    /* FILTROS */
+    .filtros-bar {
+      background: var(--branco);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 12px;
+      flex-wrap: wrap;
+      box-shadow: var(--sombra);
+      margin-bottom: 20px;
+    }
+    .filtros-bar label { font-size: 0.78rem; font-weight: 600; color: var(--cinza-texto); }
+    .filtros-bar select, .filtros-bar input[type="text"], .filtros-bar input[type="date"] {
+      font-size: 0.8rem; padding: 7px 12px;
+      border: 1.5px solid var(--cinza-borda); border-radius: var(--radius-sm);
+      background: var(--branco); color: #1e293b;
+      min-width: 140px;
+    }
+    .filtros-bar select:focus, .filtros-bar input:focus {
+      outline: none; border-color: var(--azul-claro);
+    }
+    .btn-filtrar {
+      background: var(--azul-claro); color: var(--branco); border: none;
+      border-radius: var(--radius-sm); padding: 7px 16px;
+      font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-limpar {
+      background: none; border: 1.5px solid var(--cinza-borda);
+      border-radius: var(--radius-sm); padding: 7px 14px;
+      font-size: 0.8rem; color: var(--cinza-texto); cursor: pointer;
+    }
+    .contador-resultados {
+      margin-left: auto;
+      font-size: 0.78rem; color: var(--cinza-texto);
+    }
+
+    /* TABELA */
+    .tabela-wrapper {
+      background: var(--branco);
+      border-radius: var(--radius);
+      box-shadow: var(--sombra);
+      overflow: hidden;
+    }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    thead th {
+      background: #f8fafc;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--cinza-texto);
+      border-bottom: 1.5px solid var(--cinza-borda);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    thead th:hover { color: var(--azul); }
+    thead th .sort { margin-left: 4px; opacity: 0.4; }
+    tbody tr {
+      border-bottom: 1px solid var(--cinza-borda);
+      transition: background 0.12s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+    tbody td {
+      padding: 13px 14px;
+      vertical-align: middle;
+    }
+
+    /* BADGES STATUS */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .badge.pendente  { background: var(--amar-light); color: #92400e; }
+    .badge.pendente::before  { background: var(--amarelo); }
+    .badge.validada  { background: #eff6ff; color: var(--azul-claro); }
+    .badge.validada::before  { background: var(--azul-claro); }
+    .badge.emitida   { background: var(--verde-light); color: #14532d; }
+    .badge.emitida::before   { background: var(--verde); }
+    .badge.erro-val  { background: var(--verm-light); color: #7f1d1d; }
+    .badge.erro-val::before  { background: var(--vermelho); }
+    .badge.entregue  { background: #f0fdf4; color: #166534; }
+    .badge.entregue::before  { background: #22c55e; }
+
+    /* INDICADOR SLA */
+    .sla-ok   { color: var(--verde); font-weight: 600; }
+    .sla-warn { color: var(--amarelo); font-weight: 600; }
+    .sla-venc { color: var(--vermelho); font-weight: 700; }
+
+    /* AÇÕES DA LINHA */
+    .acoes {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .btn-acao {
+      padding: 5px 10px; border-radius: var(--radius-sm);
+      font-size: 0.75rem; font-weight: 600; cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-acao.aprovar {
+      background: var(--verde-light); color: var(--verde);
+      border-color: #86efac;
+    }
+    .btn-acao.aprovar:hover { background: var(--verde); color: var(--branco); }
+    .btn-acao.rejeitar {
+      background: var(--verm-light); color: var(--vermelho);
+      border-color: #fca5a5;
+    }
+    .btn-acao.rejeitar:hover { background: var(--vermelho); color: var(--branco); }
+    .btn-acao.emitir {
+      background: #eff6ff; color: var(--azul-claro);
+      border-color: #93c5fd;
+    }
+    .btn-acao.emitir:hover { background: var(--azul-claro); color: var(--branco); }
+    .btn-acao.ver {
+      background: #f8fafc; color: var(--cinza-texto);
+      border-color: var(--cinza-borda);
+    }
+    .btn-acao.ver:hover { background: var(--cinza-bg); }
+
+    /* CÉLULA TOMADOR */
+    .tomador-nome { font-weight: 600; color: #1e293b; }
+    .tomador-doc  { font-size: 0.72rem; color: var(--cinza-texto); font-family: monospace; }
+
+    /* VALOR */
+    .valor-col { font-weight: 700; color: #1e293b; font-family: 'Courier New', monospace; }
+
+    /* ESTADO VAZIO */
+    .vazio {
+      text-align: center; padding: 60px 20px;
+      color: var(--cinza-texto);
+    }
+    .vazio .icon { font-size: 40px; margin-bottom: 12px; }
+    .vazio p { font-size: 0.9rem; }
+
+    /* MODAL */
+    .modal-bg {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45); z-index: 500;
+      align-items: center; justify-content: center;
+    }
+    .modal-bg.aberto { display: flex; }
+    .modal {
+      background: var(--branco);
+      border-radius: var(--radius);
+      width: 560px; max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .modal-header {
+      padding: 20px 24px 14px;
+      border-bottom: 1px solid var(--cinza-borda);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h2 { font-size: 1rem; color: var(--azul); font-weight: 700; }
+    .btn-fechar {
+      background: none; border: none; font-size: 1.2rem;
+      cursor: pointer; color: var(--cinza-texto);
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-fechar:hover { background: var(--cinza-bg); }
+    .modal-corpo { padding: 20px 24px; }
+    .linha-detalhe {
+      display: flex; gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--cinza-bg);
+      font-size: 0.84rem;
+    }
+    .linha-detalhe:last-child { border-bottom: none; }
+    .linha-detalhe .chave {
+      width: 160px; flex-shrink: 0;
+      color: var(--cinza-texto); font-weight: 600; font-size: 0.78rem;
+    }
+    .linha-detalhe .val-det { color: #1e293b; word-break: break-word; }
+    .modal-footer {
+      padding: 14px 24px;
+      border-top: 1px solid var(--cinza-borda);
+      display: flex; gap: 10px; justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    /* TOAST */
+    .toast-container {
+      position: fixed; bottom: 24px; right: 24px;
+      display: flex; flex-direction: column; gap: 10px;
+      z-index: 1000;
+    }
+    .toast {
+      background: #1e293b; color: var(--branco);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      font-size: 0.83rem; font-weight: 600;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease;
+      max-width: 320px;
+    }
+    .toast.sucesso { border-left: 4px solid var(--verde); }
+    .toast.erro    { border-left: 4px solid var(--vermelho); }
+    .toast.aviso   { border-left: 4px solid var(--amarelo); }
+    @keyframes slideIn {
+      from { transform: translateX(120%); opacity: 0; }
+      to   { transform: translateX(0);   opacity: 1; }
+    }
+
+    /* RESPONSIVIDADE */
+    @media (max-width: 1024px) {
+      .metricas { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .conteudo { margin-left: 0; }
+      .area { padding: 16px; }
+      .metricas { grid-template-columns: 1fr 1fr; }
+      table { font-size: 0.75rem; }
+    }
+
+    /* Paginação */
+    .paginacao {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px;
+      border-top: 1px solid var(--cinza-borda);
+      font-size: 0.8rem; color: var(--cinza-texto);
+    }
+    .pg-btns { display: flex; gap: 6px; }
+    .pg-btn {
+      padding: 5px 12px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--cinza-borda);
+      background: var(--branco); cursor: pointer; font-size: 0.78rem;
+    }
+    .pg-btn.ativo { background: var(--azul-claro); color: var(--branco); border-color: var(--azul-claro); }
+    .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  
+
+  /* Dashboard — layout flex override */
+  #tela-dashboard { display: none; min-height: 100vh; }
+</style>
 </head>
 <body>
 
@@ -776,6 +1158,164 @@
   </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════════════════════
+     TELA DASHBOARD INTERNO (apenas equipe CECON)
+════════════════════════════════════════════════════════ -->
+<div id="tela-dashboard" style="display:none;">
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-c">CC</div>
+      <div>
+        <div class="nome">CECON</div>
+        <div class="sub">Painel Interno</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-item ativo" onclick="dashMostrarAba('solicitacoes')">
+        <span class="icon">📋</span> Solicitações
+      </div>
+      <div class="nav-item" onclick="dashMostrarAba('clientes')">
+        <span class="icon">🏢</span> Clientes
+      </div>
+      <div class="nav-item" onclick="dashMostrarAba('relatorios')">
+        <span class="icon">📊</span> Relatórios
+      </div>
+      <div class="nav-item" onclick="dashAbrirPortalCliente()">
+        <span class="icon">🔗</span> Portal Cliente
+      </div>
+      <div class="nav-item" onclick="dashAbrirAcompanhamento()">
+        <span class="icon">👁</span> Acompanhamento
+      </div>
+    </nav>
+    <div class="sidebar-rodape">
+      <div id="dash-user-chip" style="color:#93c5fd;font-size:0.8rem;font-weight:600;margin-bottom:10px;"></div>
+      <button onclick="sair()" style="background:rgba(255,255,255,0.1);border:none;color:#93c5fd;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:0.78rem;width:100%;text-align:left;">🚪 Sair</button>
+      <div style="margin-top:10px;">v1.0.0 — CECON NFS-e<br/>© 2026</div>
+    </div>
+  </aside>
+
+  <!-- CONTEÚDO -->
+  <div class="conteudo">
+    <div class="topbar">
+      <h1 id="titulo-pagina">📋 Solicitações de NFS-e</h1>
+      <div class="topbar-direita">
+        <button class="btn-sm" onclick="dashExportarCSV()">⬇ Exportar CSV</button>
+        <button class="btn-sm sec" onclick="dashRecarregarDados()">🔄 Atualizar</button>
+        <div class="usuario-chip">
+          <div class="avatar">LE</div>
+          <span>Letícia</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="area">
+
+      <!-- MÉTRICAS -->
+      <div class="metricas" id="metricas">
+        <div class="metrica total">
+          <div class="label">Total do Mês</div>
+          <div class="valor" id="m-total">—</div>
+          <div class="sub">solicitações recebidas</div>
+        </div>
+        <div class="metrica pendente">
+          <div class="label">Pendentes</div>
+          <div class="valor" id="m-pendente">—</div>
+          <div class="sub">aguardando ação</div>
+        </div>
+        <div class="metrica emitida">
+          <div class="label">Emitidas</div>
+          <div class="valor" id="m-emitida">—</div>
+          <div class="sub">este mês</div>
+        </div>
+        <div class="metrica erro">
+          <div class="label">Com Erro</div>
+          <div class="valor" id="m-erro">—</div>
+          <div class="sub">requerem revisão</div>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="filtros-bar">
+        <label>Status:</label>
+        <select id="filtro-status" onchange="dashAplicarFiltros()">
+          <option value="">Todos</option>
+          <option value="pendente">Pendente</option>
+          <option value="validada">Validada</option>
+          <option value="emitida">Emitida</option>
+          <option value="entregue">Entregue</option>
+          <option value="erro">Com Erro</option>
+        </select>
+
+        <label>Cliente:</label>
+        <input type="text" id="filtro-cliente" placeholder="Cliente CECON, tomador ou CNPJ..." oninput="dashAplicarFiltros()" />
+
+        <label>De:</label>
+        <input type="date" id="filtro-de" onchange="dashAplicarFiltros()" />
+        <label>Até:</label>
+        <input type="date" id="filtro-ate" onchange="dashAplicarFiltros()" />
+
+        <button class="btn-limpar" onclick="dashLimparFiltros()">✕ Limpar</button>
+        <span class="contador-resultados" id="contador-resultados"></span>
+      </div>
+
+      <!-- TABELA -->
+      <div class="tabela-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="dashOrdenarPor('protocolo')">Protocolo <span class="sort">↕</span></th>
+              <th onclick="dashOrdenarPor('empresa_cliente')">Cliente CECON <span class="sort">↕</span></th>
+              <th onclick="dashOrdenarPor('nome_tomador')">Tomador <span class="sort">↕</span></th>
+              <th onclick="dashOrdenarPor('data_competencia')">Competência <span class="sort">↕</span></th>
+              <th onclick="dashOrdenarPor('timestamp')">Solicitado em <span class="sort">↕</span></th>
+              <th onclick="dashOrdenarPor('valor')">Valor <span class="sort">↕</span></th>
+              <th>Status</th>
+              <th>SLA</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-corpo">
+            <!-- Preenchido por JS -->
+          </tbody>
+        </table>
+        <div id="estado-vazio" class="vazio" style="display:none;">
+          <div class="icon">📭</div>
+          <p>Nenhuma solicitação encontrada com os filtros aplicados.</p>
+        </div>
+        <div class="paginacao">
+          <span id="info-pagina">Mostrando 0 registros</span>
+          <div class="pg-btns" id="pg-btns"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALHES -->
+<div class="modal-bg" id="modal-bg" onclick="dashFecharModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Detalhes da Solicitação</h2>
+      <button class="btn-fechar" onclick="dashFecharModalBtn()">✕</button>
+    </div>
+    <div class="modal-corpo" id="modal-corpo">
+      <!-- Preenchido por JS -->
+    </div>
+    <div class="modal-footer" id="modal-footer">
+      <!-- Botões de ação por status -->
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toast-container"></div>
+</div>
+
 <!-- TOASTS -->
 <div class="toast-container" id="toast-container"></div>
 
@@ -1032,6 +1572,8 @@ async function sair() {
   } catch {}
   ACCESS_TOKEN = null; USUARIO = null; MINHAS_NOTAS = [];
   localStorage.removeItem('cecon_auth');
+  document.getElementById('tela-dashboard').style.display = 'none';
+  if (window._dashInterval) { clearInterval(window._dashInterval); window._dashInterval = null; }
   document.getElementById('login-email').value = '';
   document.getElementById('login-senha').value = '';
   if (window.netlifyIdentity) window.netlifyIdentity.logout();
@@ -1046,8 +1588,6 @@ function mostrarLogin() {
 
 async function acessarPortal() {
   ocultarLoading();
-  document.getElementById('tela-login').classList.remove('vis');
-  document.getElementById('tela-principal').classList.add('vis');
 
   // Sempre busca os dados frescos do usuário para garantir que o e-mail está presente
   try {
@@ -1066,6 +1606,14 @@ async function acessarPortal() {
     }
   } catch(e) { console.warn('Não foi possível atualizar dados do usuário:', e); }
 
+  // Roteamento: equipe → dashboard | cliente → portal
+  if (ehEquipe()) {
+    mostrarDashboard();
+    return;
+  }
+
+  document.getElementById('tela-login').classList.remove('vis');
+  document.getElementById('tela-principal').classList.add('vis');
   const nome = USUARIO?.user_metadata?.nome || USUARIO?.user_metadata?.full_name || USUARIO?.email?.split('@')[0] || 'Cliente';
   document.getElementById('user-chip').textContent = '🏢 ' + nome;
   // Pre-preencher email de notificação com o e-mail do usuário logado
@@ -1218,7 +1766,9 @@ async function enviarFormulario() {
     valor:            parseFloat(document.getElementById('valor').value.replace(/\./g,'').replace(',','.'))||0,
     descricao:        document.getElementById('descricao').value.trim(),
     email_notificacao:document.getElementById('email_notificacao').value.trim(),
+    email_notif:      document.getElementById('email_notificacao').value.trim(),
     observacoes:      document.getElementById('observacoes').value.trim(),
+    obs:              document.getElementById('observacoes').value.trim(),
     nome_cliente:     USUARIO?.user_metadata?.nome || USUARIO?.user_metadata?.full_name || USUARIO?.email || document.getElementById('email_notificacao').value || '',
     timestamp:        new Date().toISOString(),
   };
@@ -1488,6 +2038,723 @@ function mostrarToast(msg, tipo) {
     setTimeout(function(){ t.remove(); }, 300);
   }, 3500);
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   EQUIPE E ROTEAMENTO
+════════════════════════════════════════════════════════ */
+const EQUIPE_EMAILS = ['pessoal@ceconcontabilidade.com','fiscal@ceconcontabilidade.com','camilamoraes@ceconcontabilidade.com'];
+
+function ehEquipe() {
+  return USUARIO && EQUIPE_EMAILS.includes((USUARIO.email || '').toLowerCase());
+}
+
+function mostrarDashboard() {
+  document.getElementById('tela-login').classList.remove('vis');
+  document.getElementById('tela-principal').classList.remove('vis');
+  document.getElementById('tela-dashboard').style.display = 'flex';
+  // Atualizar chip do usuário no dashboard
+  const nome = USUARIO?.user_metadata?.nome || USUARIO?.user_metadata?.full_name || USUARIO?.email?.split('@')[0] || 'Equipe';
+  const el = document.getElementById('dash-user-chip');
+  if (el) el.textContent = nome;
+  dashCarregarDados().then(() => { dashRenderizarTudo(); dashAtualizarMetricas(); });
+  // Auto-refresh a cada 30s
+  if (!window._dashInterval) {
+    window._dashInterval = setInterval(() => {
+      dashCarregarDados().then(() => { dashRenderizarTudo(); dashAtualizarMetricas(); });
+    }, 30000);
+  }
+}
+
+function voltarAoPortal() {
+  document.getElementById('tela-dashboard').style.display = 'none';
+  document.getElementById('tela-principal').classList.add('vis');
+  carregarMinhasNotas();
+}
+
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD INTERNO — AIRTABLE CONFIG
+════════════════════════════════════════════════════════ */
+
+/* =======================================================
+   AIRTABLE — configuração e helpers
+======================================================= */
+const AT = {
+  BASE:  'appG8XSVHf40njzZb',
+  TABLE: 'tblVViThfIwUO3Hb5',
+  PAT:   'patXqiKCHwQt0tTV4.fc9e1e3370b9f0803ec165a8e19d3642cf689341d65b56b43b2d49fcc6fb0f68',
+  F: {
+    PROTOCOLO:             'fldvVVJkZgTnYycj0',
+    NOME_TOMADOR:          'fld3LruCQSXDLGBnO',
+    TIPO_TOMADOR:          'fldt0crh6qU4JRtiw',
+    CNPJ_CPF:              'fldTIGVJCfWyjqTlr',
+    IE:                    'fldPaf5ACQI0mvTbC',
+    EMAIL_TOMADOR:         'fldlYftQSniygCEH3',
+    TELEFONE:              'fldB4LGwcKAfB8YVO',
+    CEP:                   'fldOT9TUENQ4jhR5C',
+    LOGRADOURO:            'fldDCY0pEKuLQawbu',
+    NUMERO:                'fldAt6O2fCpERWctC',
+    BAIRRO:                'fldMZ7eLglw4iv4VT',
+    COMPLEMENTO:           'fldMVO0VGGRn6h8D7',
+    CIDADE:                'fldqoQMd2mwgNiJQT',
+    ESTADO:                'fldfaLrUVcyF58xK3',
+    DATA_COMPETENCIA:      'fldcFnV8Estxeda05',
+    VALOR:                 'fldwhB4xACR8UY5P2',
+    DESCRICAO:             'fldxemNqVMNYN1NMw',
+    EMAIL_NOTIFICACAO:     'fldj6upojW1M7Z7IC',
+    OBSERVACOES:           'fldixk6o0ydHxzQfN',
+    STATUS_NFSE:           'fldxh8LhDp3qt48O7',
+    TIMESTAMP_SOLICITACAO: 'fld3uZG4hp6kvZ056',
+    DATA_EMISSAO:          'fldUx8n8ePX0Nfou8',
+    DATA_ENTREGA:          'fldNtEJAKMFpQDn26',
+    OBS_ERRO:              'fld2VA3L4bezA7cxz',
+    NUMERO_NF:             'fldrmjLJ7rQ6K9mPM',
+    LINK_NF:               'fld3vvdZwPkBjKNzP',
+    EMPRESA_CLIENTE:       'fldX0jFHNl5kTHY19',
+  }
+};
+
+// Mapeamento Airtable (capitalizado) ↔ interno (minúsculo)
+const DASH_AT_PARA_INTERNO = { 'Recebida':'pendente','Validada':'validada','Emitida':'emitida','Entregue':'entregue','Erro':'erro' };
+const DASH_INTERNO_PARA_AT = { 'pendente':'Recebida','validada':'Validada','emitida':'Emitida','entregue':'Entregue','erro':'Erro' };
+
+function dashFloatParaValor(n) {
+  if (!n && n !== 0) return '0,00';
+  return Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function dashNormalizarRegistro(rec) {
+  const f = rec.fields;
+  return {
+    _id:              rec.id,
+    protocolo:        f[AT.F.PROTOCOLO]              || '',
+    tipo_tomador:     (f[AT.F.TIPO_TOMADOR] || 'PJ').toLowerCase(),
+    nome_tomador:     f[AT.F.NOME_TOMADOR]           || '',
+    doc_tomador:      f[AT.F.CNPJ_CPF]               || '',
+    ie_tomador:       f[AT.F.IE]                     || '',
+    email_tomador:    f[AT.F.EMAIL_TOMADOR]           || '',
+    telefone_tomador: f[AT.F.TELEFONE]                || '',
+    cep:              f[AT.F.CEP]                    || '',
+    logradouro:       f[AT.F.LOGRADOURO]              || '',
+    numero:           f[AT.F.NUMERO]                  || '',
+    bairro:           f[AT.F.BAIRRO]                  || '',
+    complemento:      f[AT.F.COMPLEMENTO]             || '',
+    cidade:           f[AT.F.CIDADE]                  || '',
+    estado:           f[AT.F.ESTADO]                  || '',
+    data_competencia: f[AT.F.DATA_COMPETENCIA]        || '',
+    valor:            dashFloatParaValor(f[AT.F.VALOR]),
+    descricao:        f[AT.F.DESCRICAO]               || '',
+    email_notif:      f[AT.F.EMAIL_NOTIFICACAO]        || '',
+    obs:              f[AT.F.OBSERVACOES]              || '',
+    status:           DASH_AT_PARA_INTERNO[f[AT.F.STATUS_NFSE]] || 'pendente',
+    timestamp:        f[AT.F.TIMESTAMP_SOLICITACAO]   || rec.createdTime || new Date().toISOString(),
+    data_emissao:     f[AT.F.DATA_EMISSAO]             || '',
+    data_entrega:     f[AT.F.DATA_ENTREGA]             || '',
+    obs_erro:         f[AT.F.OBS_ERRO]                || '',
+    numero_nf:        f[AT.F.NUMERO_NF]               || '',
+    link_nf:          f[AT.F.LINK_NF]                || '',
+    empresa_cliente:  f[AT.F.EMPRESA_CLIENTE]          || '',
+    historico:        [],
+  };
+}
+
+/* =======================================================
+   ESTADO E DASH_DADOS
+======================================================= */
+let DASH_DADOS = [];
+let DASH_FILTRADOS = [];
+let dashPaginaAtual = 1;
+const DASH_POR_PAGINA = 10;
+let dashOrdenacao = { col: 'timestamp', asc: false };
+
+/* =======================================================
+   INICIALIZAÇÃO
+======================================================= */
+
+
+/* =======================================================
+   PERSISTÊNCIA — Airtable API
+======================================================= */
+async function dashCarregarDados() {
+  try {
+    let allRecords = [];
+    let offset = '';
+    do {
+      const url = new URL(`https://api.airtable.com/v0/${AT.BASE}/${AT.TABLE}`);
+      url.searchParams.set('returnFieldsByFieldId', 'true');
+      url.searchParams.set('sort[0][field]', AT.F.TIMESTAMP_SOLICITACAO);
+      url.searchParams.set('sort[0][direction]', 'desc');
+      if (offset) url.searchParams.set('offset', offset);
+
+      const resp = await fetch(url.toString(), {
+        headers: { 'Authorization': `Bearer ${AT.PAT}` }
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      allRecords = allRecords.concat(data.records || []);
+      offset = data.offset || '';
+    } while (offset);
+
+    DASH_DADOS = allRecords.map(dashNormalizarRegistro);
+  } catch (e) {
+    console.error('Erro ao carregar Airtable:', e);
+    mostrarToast('⚠ Erro ao carregar dados. Verifique a conexão.', 'erro');
+    DASH_DADOS = [];
+  }
+}
+
+function dashSalvarDados() {
+  // Atualizações feitas via PATCH direto no Airtable — sem necessidade de salvar localmente
+}
+
+async function dashRecarregarDados() {
+  await dashCarregarDados();
+  dashRenderizarTudo();
+  dashAtualizarMetricas();
+  mostrarToast('✓ Dados atualizados!', 'sucesso');
+}
+
+/* =======================================================
+   DASH_DADOS DEMO — mantido apenas como referência, não utilizado
+======================================================= */
+function dashInjetarDemoDados() {
+  // Não utilizado — dados reais vêm do Airtable
+  DASH_DADOS = [];
+  const hoje = new Date();
+  const fmt  = d => d.toISOString().split('T')[0];
+  const dias = n => { const d = new Date(hoje); d.setDate(d.getDate() - n); return d; };
+  return; // early return — remove os dados demo abaixo
+
+  DASH_DADOS = [
+    {
+      protocolo: 'CECON-260415-1001',
+      tipo_tomador: 'pj',
+      nome_tomador: 'SEU LIXO LTDA',
+      doc_tomador: '12.345.678/0001-99',
+      email_tomador: 'financeiro@seulixo.com.br',
+      email_notif: 'financeiro@seulixo.com.br',
+      cep: '38400-100', logradouro: 'Av. João Pinheiro', numero: '200', bairro: 'Centro', cidade: 'Uberlândia', estado: 'MG',
+      data_competencia: fmt(dias(5)),
+      valor: '4.750,00',
+      descricao: 'Coleta e destinação de resíduos sólidos urbanos — contrato mensal abril/2026',
+      status: 'pendente',
+      timestamp: dias(2).toISOString(),
+      historico: [{ evento: 'Solicitação criada', data: dias(2).toISOString(), usuario: 'Portal Cliente' }]
+    },
+    {
+      protocolo: 'CECON-260414-2008',
+      tipo_tomador: 'pj',
+      nome_tomador: 'FERNANDA CAMARGO SAÚDE & NUTRIÇÃO LTDA',
+      doc_tomador: '23.456.789/0001-88',
+      email_tomador: 'fernanda@fcnutricao.com.br',
+      email_notif: 'fernanda@fcnutricao.com.br',
+      cep: '38400-200', logradouro: 'Rua Santos Dumont', numero: '1.200', bairro: 'Saraiva', cidade: 'Uberlândia', estado: 'MG',
+      data_competencia: fmt(dias(8)),
+      valor: '12.500,00',
+      descricao: 'Consultoria nutricional e acompanhamento de pacientes — pacote mensal abr/2026',
+      status: 'validada',
+      timestamp: dias(3).toISOString(),
+      historico: [
+        { evento: 'Solicitação criada', data: dias(3).toISOString(), usuario: 'Portal Cliente' },
+        { evento: 'Validada pela equipe', data: dias(2).toISOString(), usuario: 'Letícia' }
+      ]
+    },
+    {
+      protocolo: 'CECON-260413-3005',
+      tipo_tomador: 'pj',
+      nome_tomador: 'RFM SERVIÇOS MÉDICOS LTDA',
+      doc_tomador: '34.567.890/0001-77',
+      email_tomador: 'financeiro@rfmmedicos.com.br',
+      email_notif: 'financeiro@rfmmedicos.com.br',
+      cep: '38400-300', logradouro: 'Av. Rondon Pacheco', numero: '3.300', bairro: 'Tibery', cidade: 'Uberlândia', estado: 'MG',
+      data_competencia: fmt(dias(12)),
+      valor: '8.200,00',
+      descricao: 'Prestação de serviços médicos especializados — plantão hospitalar abr/2026',
+      status: 'emitida',
+      timestamp: dias(5).toISOString(),
+      data_emissao: dias(2).toISOString(),
+      historico: [
+        { evento: 'Solicitação criada', data: dias(5).toISOString(), usuario: 'Portal Cliente' },
+        { evento: 'Validada pela equipe', data: dias(4).toISOString(), usuario: 'Letícia' },
+        { evento: 'NFS-e emitida no portal gov.br', data: dias(2).toISOString(), usuario: 'Letícia' }
+      ]
+    },
+    {
+      protocolo: 'CECON-260412-4011',
+      tipo_tomador: 'pj',
+      nome_tomador: 'GB MÍDIA DIGITAL LTDA',
+      doc_tomador: '45.678.901/0001-66',
+      email_tomador: 'gb@gbmidia.com.br',
+      email_notif: 'gb@gbmidia.com.br',
+      cep: '38400-400', logradouro: 'Rua Afonso Pena', numero: '890', bairro: 'Centro', cidade: 'Uberlândia', estado: 'MG',
+      data_competencia: fmt(dias(15)),
+      valor: '3.100,00',
+      descricao: 'Gestão de mídias sociais e produção de conteúdo digital — abr/2026',
+      status: 'entregue',
+      timestamp: dias(7).toISOString(),
+      data_emissao: dias(4).toISOString(),
+      data_entrega: dias(3).toISOString(),
+      historico: [
+        { evento: 'Solicitação criada', data: dias(7).toISOString(), usuario: 'Portal Cliente' },
+        { evento: 'Validada pela equipe', data: dias(6).toISOString(), usuario: 'Letícia' },
+        { evento: 'NFS-e emitida no portal gov.br', data: dias(4).toISOString(), usuario: 'Letícia' },
+        { evento: 'PDF enviado ao cliente por e-mail', data: dias(3).toISOString(), usuario: 'Sistema' }
+      ]
+    },
+    {
+      protocolo: 'CECON-260416-5002',
+      tipo_tomador: 'pj',
+      nome_tomador: 'ULTRAAFETO ULTRASSONOGRAFIA LTDA',
+      doc_tomador: '56.789.012/0001-55',
+      email_tomador: 'admin@ultraafeto.com.br',
+      email_notif: 'admin@ultraafeto.com.br',
+      cep: '38400-500', logradouro: 'Rua Espírito Santo', numero: '560', bairro: 'Centro', cidade: 'Uberlândia', estado: 'MG',
+      data_competencia: fmt(dias(1)),
+      valor: '6.800,00',
+      descricao: 'Serviços de ultrassonografia obstétrica e morfológica — período abr/2026',
+      status: 'erro',
+      obs_erro: 'CNPJ inválido no portal gov.br — verificar cadastro do tomador',
+      timestamp: dias(1).toISOString(),
+      historico: [
+        { evento: 'Solicitação criada', data: dias(1).toISOString(), usuario: 'Portal Cliente' },
+        { evento: 'Erro na validação do CNPJ', data: dias(0).toISOString(), usuario: 'Letícia' }
+      ]
+    },
+    {
+      protocolo: 'CECON-260411-6003',
+      tipo_tomador: 'pj',
+      nome_tomador: 'MSOLIS COMUNICAÇÃO E MARKETING LTDA',
+      doc_tomador: '67.890.123/0001-44',
+      email_tomador: 'msolis@msolis.com.br',
+      email_notif: 'msolis@msolis.com.br',
+      cep: '38400-600', logradouro: 'Av. Getúlio Vargas', numero: '1.000', bairro: 'Martins', cidade: 'Uberlândia', estado: 'MG',
+      data_competencia: fmt(dias(18)),
+      valor: '5.450,00',
+      descricao: 'Assessoria de comunicação e marketing digital — contrato abr/2026',
+      status: 'pendente',
+      timestamp: dias(0).toISOString(),
+      historico: [{ evento: 'Solicitação criada', data: dias(0).toISOString(), usuario: 'Portal Cliente' }]
+    },
+    {
+      protocolo: 'CECON-260410-7004',
+      tipo_tomador: 'pj',
+      nome_tomador: 'J. BORGES SOCIEDADE INDIVIDUAL DE ADVOCACIA',
+      doc_tomador: '78.901.234/0001-33',
+      email_tomador: 'jborges@jborgesadv.com.br',
+      email_notif: 'jborges@jborgesadv.com.br',
+      cep: '38400-700', logradouro: 'Rua Olegário Maciel', numero: '250', bairro: 'Centro', cidade: 'Uberlândia', estado: 'MG',
+      data_competencia: fmt(dias(20)),
+      valor: '2.800,00',
+      descricao: 'Honorários advocatícios — assessoria jurídica trabalhista abr/2026',
+      status: 'emitida',
+      timestamp: dias(9).toISOString(),
+      data_emissao: dias(7).toISOString(),
+      historico: [
+        { evento: 'Solicitação criada', data: dias(9).toISOString(), usuario: 'Portal Cliente' },
+        { evento: 'Validada e emitida', data: dias(7).toISOString(), usuario: 'Letícia' }
+      ]
+    }
+  ];
+  dashSalvarDados();
+}
+
+/* =======================================================
+   FILTROS E ORDENAÇÃO
+======================================================= */
+function dashAplicarFiltros() {
+  const status  = document.getElementById('filtro-status').value;
+  const cliente = document.getElementById('filtro-cliente').value.toLowerCase();
+  const de      = document.getElementById('filtro-de').value;
+  const ate     = document.getElementById('filtro-ate').value;
+
+  DASH_FILTRADOS = DASH_DADOS.filter(s => {
+    if (status && s.status !== status) return false;
+    if (cliente && !s.nome_tomador.toLowerCase().includes(cliente) && !s.doc_tomador.includes(cliente) && !s.empresa_cliente.toLowerCase().includes(cliente)) return false;
+    if (de  && s.timestamp < de)  return false;
+    if (ate && s.timestamp > ate + 'T23:59:59') return false;
+    return true;
+  });
+
+  dashOrdenarDados();
+  dashPaginaAtual = 1;
+  dashRenderizarTabela();
+}
+
+function dashLimparFiltros() {
+  document.getElementById('filtro-status').value  = '';
+  document.getElementById('filtro-cliente').value = '';
+  document.getElementById('filtro-de').value      = '';
+  document.getElementById('filtro-ate').value     = '';
+  dashAplicarFiltros();
+}
+
+function dashOrdenarPor(col) {
+  if (dashOrdenacao.col === col) {
+    dashOrdenacao.asc = !dashOrdenacao.asc;
+  } else {
+    dashOrdenacao.col = col;
+    dashOrdenacao.asc = true;
+  }
+  dashOrdenarDados();
+  dashRenderizarTabela();
+}
+
+function dashOrdenarDados() {
+  const { col, asc } = dashOrdenacao;
+  DASH_FILTRADOS.sort((a, b) => {
+    let va = a[col] || '', vb = b[col] || '';
+    if (col === 'valor') {
+      va = parseFloat((va + '').replace(/\./g,'').replace(',','.')) || 0;
+      vb = parseFloat((vb + '').replace(/\./g,'').replace(',','.')) || 0;
+    }
+    if (va < vb) return asc ? -1 : 1;
+    if (va > vb) return asc ?  1 : -1;
+    return 0;
+  });
+}
+
+/* =======================================================
+   RENDERIZAÇÃO PRINCIPAL
+======================================================= */
+function dashRenderizarTudo() {
+  DASH_FILTRADOS = [...DASH_DADOS];
+  dashOrdenarDados();
+  dashRenderizarTabela();
+}
+
+function dashRenderizarTabela() {
+  const inicio = (dashPaginaAtual - 1) * DASH_POR_PAGINA;
+  const fim    = inicio + DASH_POR_PAGINA;
+  const pagina = DASH_FILTRADOS.slice(inicio, fim);
+
+  const tbody = document.getElementById('tabela-corpo');
+  const vazio = document.getElementById('estado-vazio');
+
+  document.getElementById('contador-resultados').textContent =
+    `${DASH_FILTRADOS.length} resultado(s)`;
+
+  if (DASH_FILTRADOS.length === 0) {
+    tbody.innerHTML = '';
+    vazio.style.display = 'block';
+    dashRenderizarPaginacao();
+    return;
+  }
+  vazio.style.display = 'none';
+
+  tbody.innerHTML = pagina.map(s => {
+    const sla     = dashCalcularSLA(s);
+    const slaHtml = dashSlaParaHtml(sla, s.status);
+    return `
+      <tr>
+        <td><code style="font-size:0.75rem;color:var(--azul-claro);">${s.protocolo}</code></td>
+        <td><span style="font-size:0.8rem;font-weight:600;color:var(--azul);">${s.empresa_cliente || '<span style="color:var(--cinza-texto);font-weight:400;">—</span>'}</span></td>
+        <td>
+          <div class="tomador-nome">${s.nome_tomador}</div>
+          <div class="tomador-doc">${s.doc_tomador}</div>
+        </td>
+        <td>${dashFormatarData(s.data_competencia)}</td>
+        <td>${dashFormatarDataHora(s.timestamp)}</td>
+        <td class="valor-col">R$ ${s.valor}</td>
+        <td>${dashBadgeStatus(s.status, s.obs_erro)}</td>
+        <td>${slaHtml}</td>
+        <td><div class="acoes">${dashBotoesAcao(s)}</div></td>
+      </tr>`;
+  }).join('');
+
+  dashRenderizarPaginacao();
+}
+
+function dashRenderizarPaginacao() {
+  const total  = DASH_FILTRADOS.length;
+  const paginas = Math.ceil(total / DASH_POR_PAGINA);
+  const inicio = (dashPaginaAtual - 1) * DASH_POR_PAGINA + 1;
+  const fim    = Math.min(dashPaginaAtual * DASH_POR_PAGINA, total);
+
+  document.getElementById('info-pagina').textContent =
+    total === 0 ? 'Nenhum registro' : `Mostrando ${inicio}–${fim} de ${total}`;
+
+  const container = document.getElementById('pg-btns');
+  if (paginas <= 1) { container.innerHTML = ''; return; }
+
+  let html = `<button class="pg-btn" onclick="dashIrPagina(${dashPaginaAtual-1})" ${dashPaginaAtual===1?'disabled':''}>‹</button>`;
+  for (let p = 1; p <= paginas; p++) {
+    html += `<button class="pg-btn ${p===dashPaginaAtual?'ativo':''}" onclick="dashIrPagina(${p})">${p}</button>`;
+  }
+  html += `<button class="pg-btn" onclick="dashIrPagina(${dashPaginaAtual+1})" ${dashPaginaAtual===paginas?'disabled':''}>›</button>`;
+  container.innerHTML = html;
+}
+
+function dashIrPagina(p) {
+  const paginas = Math.ceil(DASH_FILTRADOS.length / DASH_POR_PAGINA);
+  if (p < 1 || p > paginas) return;
+  dashPaginaAtual = p;
+  dashRenderizarTabela();
+}
+
+/* =======================================================
+   BADGES E HELPERS VISUAIS
+======================================================= */
+const DASH_STATUS_LABELS = {
+  pendente: 'Pendente',
+  validada: 'Validada',
+  emitida:  'Emitida',
+  entregue: 'Entregue',
+  erro:     'Com Erro'
+};
+
+function dashBadgeStatus(status, obs) {
+  const cls   = status === 'erro' ? 'erro-val' : status;
+  const label = DASH_STATUS_LABELS[status] || status;
+  const tip   = obs ? ` title="${obs}"` : '';
+  return `<span class="badge ${cls}"${tip}>${label}</span>`;
+}
+
+function dashCalcularSLA(s) {
+  // SLA = 48h a partir do timestamp de criação
+  const criado = new Date(s.timestamp);
+  const limite = new Date(criado.getTime() + 48 * 60 * 60 * 1000);
+  const agora  = new Date();
+  const diff   = limite - agora; // ms restantes
+  return { limite, diff, horas: Math.round(diff / 3600000) };
+}
+
+function dashSlaParaHtml(sla, status) {
+  if (['entregue', 'emitida'].includes(status)) return '<span class="sla-ok">✓ Cumprido</span>';
+  if (status === 'erro') return '<span class="sla-venc">⚠ Em revisão</span>';
+  if (sla.diff < 0) return `<span class="sla-venc">⚡ Vencido há ${Math.abs(sla.horas)}h</span>`;
+  if (sla.diff < 8 * 3600000) return `<span class="sla-warn">⏰ ${sla.horas}h restantes</span>`;
+  return `<span class="sla-ok">${sla.horas}h restantes</span>`;
+}
+
+function dashBotoesAcao(s) {
+  let html = `<button class="btn-acao ver" onclick='dashAbrirModal("${s.protocolo}")'>👁 Ver</button>`;
+  if (s.status === 'pendente') {
+    html += `<button class="btn-acao aprovar" onclick='dashAlterarStatus("${s.protocolo}","validada")'>✓ Validar</button>`;
+    html += `<button class="btn-acao rejeitar" onclick='dashRejeitarSolicitacao("${s.protocolo}")'>✕ Rejeitar</button>`;
+  }
+  if (s.status === 'validada') {
+    html += `<button class="btn-acao emitir" onclick='dashMarcarEmitida("${s.protocolo}")'>📄 Emitida</button>`;
+  }
+  if (s.status === 'emitida') {
+    html += `<button class="btn-acao aprovar" onclick='dashAlterarStatus("${s.protocolo}","entregue")'>📧 Entregue</button>`;
+  }
+  return html;
+}
+
+/* =======================================================
+   MÉTRICAS
+======================================================= */
+function dashAtualizarMetricas() {
+  const agora = new Date();
+  const mesAtual = agora.getMonth();
+  const anoAtual = agora.getFullYear();
+
+  const doMes = DASH_DADOS.filter(s => {
+    const d = new Date(s.timestamp);
+    return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+  });
+
+  document.getElementById('m-total').textContent    = doMes.length;
+  document.getElementById('m-pendente').textContent = doMes.filter(s => s.status === 'pendente').length;
+  document.getElementById('m-emitida').textContent  = doMes.filter(s => ['emitida','entregue'].includes(s.status)).length;
+  document.getElementById('m-erro').textContent     = doMes.filter(s => s.status === 'erro').length;
+}
+
+/* =======================================================
+   AÇÕES
+======================================================= */
+async function dashAlterarStatus(protocolo, novoStatus, obs) {
+  const idx = DASH_DADOS.findIndex(s => s.protocolo === protocolo);
+  if (idx === -1) return;
+  const registro = DASH_DADOS[idx];
+  if (!registro._id) { mostrarToast('⚠ Registro sem ID — recarregue a página.', 'erro'); return; }
+
+  const fields = {
+    [AT.F.STATUS_NFSE]: DASH_INTERNO_PARA_AT[novoStatus] || 'Recebida',
+  };
+  if (obs) fields[AT.F.OBS_ERRO] = obs;
+  if (novoStatus === 'emitida')  fields[AT.F.DATA_EMISSAO] = new Date().toISOString().split('T')[0];
+  if (novoStatus === 'entregue') fields[AT.F.DATA_ENTREGA] = new Date().toISOString().split('T')[0];
+
+  try {
+    const resp = await fetch(
+      `https://api.airtable.com/v0/${AT.BASE}/${AT.TABLE}/${registro._id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${AT.PAT}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fields }),
+      }
+    );
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${resp.status}`);
+    }
+
+    // Atualiza estado local
+    DASH_DADOS[idx].status = novoStatus;
+    if (obs) DASH_DADOS[idx].obs_erro = obs;
+    if (novoStatus === 'emitida')  DASH_DADOS[idx].data_emissao = new Date().toISOString();
+    if (novoStatus === 'entregue') DASH_DADOS[idx].data_entrega = new Date().toISOString();
+
+    dashRenderizarTudo();
+    dashAtualizarMetricas();
+    dashFecharModalBtn();
+    mostrarToast(`✓ Solicitação ${protocolo} → ${DASH_STATUS_LABELS[novoStatus]}`, 'sucesso');
+  } catch (e) {
+    mostrarToast(`⚠ Erro ao atualizar: ${e.message}`, 'erro');
+  }
+}
+
+async function dashRejeitarSolicitacao(protocolo) {
+  const motivo = prompt('Informe o motivo da rejeição:');
+  if (motivo === null) return;
+  await dashAlterarStatus(protocolo, 'erro', motivo || 'Motivo não informado');
+}
+
+async function dashMarcarEmitida(protocolo) {
+  if (confirm(`Confirma que a NFS-e do protocolo ${protocolo} foi emitida no portal gov.br?`)) {
+    await dashAlterarStatus(protocolo, 'emitida');
+  }
+}
+
+/* =======================================================
+   MODAL DE DETALHES
+======================================================= */
+function dashAbrirModal(protocolo) {
+  const s = DASH_DADOS.find(d => d.protocolo === protocolo);
+  if (!s) return;
+
+  document.getElementById('modal-titulo').textContent = `Protocolo: ${protocolo}`;
+
+  const campos = [
+    ['Cliente CECON', s.empresa_cliente || '—'],
+    ['', ''],
+    ['Tipo de Tomador', s.tipo_tomador === 'pj' ? 'Pessoa Jurídica (CNPJ)' : 'Pessoa Física (CPF)'],
+    ['Nome/Razão Social', s.nome_tomador],
+    ['CNPJ / CPF', s.doc_tomador],
+    ['IE', s.ie_tomador || '—'],
+    ['E-mail do Tomador', s.email_tomador],
+    ['Telefone', s.telefone_tomador || '—'],
+    ['', ''],
+    ['Endereço', `${s.logradouro}, ${s.numero}${s.complemento ? ' — ' + s.complemento : ''}`],
+    ['Bairro', s.bairro],
+    ['Cidade/Estado', `${s.cidade} — ${s.estado}`],
+    ['CEP', s.cep],
+    ['', ''],
+    ['Data de Competência', dashFormatarData(s.data_competencia)],
+    ['Valor da Nota', 'R$ ' + s.valor],
+    ['Descrição do Serviço', s.descricao],
+    ['E-mail para NFS-e', s.email_notif],
+    ['Observações', s.obs || '—'],
+    ['', ''],
+    ['Status Atual', DASH_STATUS_LABELS[s.status]],
+    ['Solicitado em', dashFormatarDataHora(s.timestamp)],
+    s.data_emissao  ? ['Data de Emissão',  dashFormatarDataHora(s.data_emissao)]  : null,
+    s.data_entrega  ? ['Data de Entrega',  dashFormatarDataHora(s.data_entrega)]  : null,
+    s.obs_erro      ? ['⚠ Obs. do Erro',   s.obs_erro]                        : null,
+  ].filter(Boolean);
+
+  document.getElementById('modal-corpo').innerHTML = `
+    ${campos.map(([k,v]) => k
+      ? `<div class="linha-detalhe"><span class="chave">${k}</span><span class="val-det">${v}</span></div>`
+      : '<hr style="border:none;border-top:1px dashed var(--cinza-borda);margin:8px 0;">'
+    ).join('')}
+    ${(s.historico||[]).length > 0 ? `
+      <hr style="border:none;border-top:1px dashed var(--cinza-borda);margin:12px 0 8px;" />
+      <div style="font-size:0.78rem;font-weight:700;color:var(--cinza-texto);margin-bottom:8px;">HISTÓRICO</div>
+      ${s.historico.map(h => `
+        <div class="linha-detalhe" style="font-size:0.78rem;">
+          <span class="chave">${dashFormatarDataHora(h.data)}</span>
+          <span class="val-det">${h.evento} <span style="color:var(--cinza-texto);">(${h.usuario})</span></span>
+        </div>`).join('')}
+    ` : ''}
+  `;
+
+  // Botões no footer
+  let footerHtml = `<button class="btn-sm sec" onclick="dashFecharModalBtn()">Fechar</button>`;
+  if (s.status === 'pendente') {
+    footerHtml += `<button class="btn-sm" style="background:var(--verde);" onclick='dashAlterarStatus("${protocolo}","validada")'>✓ Validar Solicitação</button>`;
+    footerHtml += `<button class="btn-sm" style="background:var(--vermelho);" onclick='dashRejeitarSolicitacao("${protocolo}")'>✕ Rejeitar</button>`;
+  }
+  if (s.status === 'validada') {
+    footerHtml += `<button class="btn-sm" onclick='dashMarcarEmitida("${protocolo}")'>📄 Confirmar Emissão</button>`;
+  }
+  if (s.status === 'emitida') {
+    footerHtml += `<button class="btn-sm" style="background:var(--verde);" onclick='dashAlterarStatus("${protocolo}","entregue")'>📧 Confirmar Entrega</button>`;
+  }
+  document.getElementById('modal-footer').innerHTML = footerHtml;
+
+  document.getElementById('modal-bg').classList.add('aberto');
+}
+
+function dashFecharModal(e) {
+  if (e.target === document.getElementById('modal-bg')) dashFecharModalBtn();
+}
+function dashFecharModalBtn() {
+  document.getElementById('modal-bg').classList.remove('aberto');
+}
+
+/* =======================================================
+   EXPORTAÇÃO CSV
+======================================================= */
+function dashExportarCSV() {
+  const cabecalho = ['Protocolo','Tomador','CNPJ/CPF','Competência','Valor','Status','Solicitado em','E-mail'];
+  const linhas = DASH_DADOS.map(s => [
+    s.protocolo, s.nome_tomador, s.doc_tomador,
+    s.data_competencia, s.valor, DASH_STATUS_LABELS[s.status],
+    dashFormatarDataHora(s.timestamp), s.email_notif
+  ].map(v => `"${(v||'').replace(/"/g,'""')}"`).join(','));
+
+  const csv = [cabecalho.join(','), ...linhas].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `cecon_nfse_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarToast('✓ CSV exportado com sucesso!', 'sucesso');
+}
+
+/* =======================================================
+   NAVEGAÇÃO
+======================================================= */
+function dashMostrarAba(aba) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('ativo'));
+  event.currentTarget.classList.add('ativo');
+  // Em produção: renderizar conteúdo diferente por aba
+  document.getElementById('titulo-pagina').textContent =
+    aba === 'solicitacoes' ? '📋 Solicitações de NFS-e' :
+    aba === 'clientes'     ? '🏢 Clientes Premium'      :
+    aba === 'relatorios'   ? '📊 Relatórios'            : '📋 Solicitações de NFS-e';
+}
+
+function dashAbrirPortalCliente()   { voltarAoPortal(); }
+function dashAbrirAcompanhamento()  { window.open('acompanhamento_cliente.html', '_blank'); } // URL a atualizar após deploy
+
+
+
+/* =======================================================
+   FORMATADORES
+======================================================= */
+function dashFormatarData(str) {
+  if (!str) return '—';
+  const [y,m,d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function dashFormatarDataHora(str) {
+  if (!str) return '—';
+  const d = new Date(str);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+}
+
+// Teclado: ESC fecha modal
+
+
 
 /* ═══════════════════════════════════════════════════════
    INICIALIZAÇÃO
