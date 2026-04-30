@@ -1197,7 +1197,7 @@ async function enviarFormulario() {
     descricao:        document.getElementById('descricao').value.trim(),
     email_notificacao:document.getElementById('email_notificacao').value.trim(),
     observacoes:      document.getElementById('observacoes').value.trim(),
-    nome_cliente:     USUARIO?.user_metadata?.nome || USUARIO?.user_metadata?.full_name || USUARIO?.email || '',
+    nome_cliente:     USUARIO?.user_metadata?.nome || USUARIO?.user_metadata?.full_name || USUARIO?.email || document.getElementById('email_notificacao').value || '',
     timestamp:        new Date().toISOString(),
   };
 
@@ -1487,9 +1487,3 @@ document.addEventListener('DOMContentLoaded', function() {
   } catch(e) {
     console.error('Init error:', e);
     ocultarLoading();
-    mostrarLogin();
-  }
-});
-</script>
-</body>
-</html> 
