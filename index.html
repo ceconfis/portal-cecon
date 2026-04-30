@@ -824,6 +824,53 @@
 
   /* Dashboard — layout flex override */
   #tela-dashboard { display: none; min-height: 100vh; }
+
+    /* ── ABAS DO DASHBOARD ── */
+    .dash-view { display: none; }
+    .dash-view.ativo { display: block; }
+
+    /* Clientes */
+    .clientes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .cliente-card {
+      background: var(--branco);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--sombra);
+      border-top: 3px solid var(--azul-claro);
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+    }
+    .cliente-card:hover { box-shadow: 0 6px 20px rgba(26,60,110,0.15); }
+    .cliente-card .cli-nome { font-weight: 700; color: var(--azul); font-size: 0.9rem; margin-bottom: 12px; }
+    .cliente-card .cli-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .cliente-card .cli-stat { background: var(--cinza-bg); border-radius: var(--radius-sm); padding: 10px 12px; }
+    .cliente-card .cli-stat .lbl { font-size: 0.68rem; font-weight: 700; color: var(--cinza-texto); text-transform: uppercase; letter-spacing: 0.5px; }
+    .cliente-card .cli-stat .val { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-top: 2px; }
+    .cliente-card .cli-badge { display: inline-flex; align-items: center; gap: 5px; margin-top: 12px; padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+    .cliente-card .cli-badge.ok { background: var(--verde-light); color: #14532d; }
+    .cliente-card .cli-badge.pend { background: var(--amar-light); color: #92400e; }
+    .cliente-card .cli-badge.erro { background: var(--verm-light); color: #7f1d1d; }
+
+    /* Relatórios */
+    .rel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .rel-card { background: var(--branco); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--sombra); }
+    .rel-card h3 { font-size: 0.82rem; font-weight: 700; color: var(--cinza-texto); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; border-bottom: 1px solid var(--cinza-borda); padding-bottom: 10px; }
+    .rel-linha { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--cinza-bg); font-size: 0.83rem; }
+    .rel-linha:last-child { border-bottom: none; }
+    .rel-linha .rln { color: #1e293b; font-weight: 500; flex: 1; }
+    .rel-linha .rlv { font-weight: 700; color: var(--azul); }
+    .barra-wrap { flex: 1; margin: 0 12px; background: var(--cinza-bg); border-radius: 4px; height: 8px; overflow: hidden; }
+    .barra-fill { height: 100%; background: var(--azul-claro); border-radius: 4px; transition: width 0.5s; }
+    .rel-kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .rel-kpi { text-align: center; background: var(--cinza-bg); border-radius: var(--radius-sm); padding: 14px; }
+    .rel-kpi .kval { font-size: 1.6rem; font-weight: 800; color: var(--azul); }
+    .rel-kpi .klbl { font-size: 0.72rem; color: var(--cinza-texto); margin-top: 4px; }
+    @media (max-width: 1024px) { .rel-grid { grid-template-columns: 1fr; } }
+
 </style>
 </head>
 <body>
@@ -1175,13 +1222,13 @@
       </div>
     </div>
     <nav>
-      <div class="nav-item ativo" onclick="dashMostrarAba('solicitacoes')">
+      <div class="nav-item ativo" onclick="dashMostrarAba('solicitacoes', this)">
         <span class="icon">📋</span> Solicitações
       </div>
-      <div class="nav-item" onclick="dashMostrarAba('clientes')">
+      <div class="nav-item" onclick="dashMostrarAba('clientes', this)">
         <span class="icon">🏢</span> Clientes
       </div>
-      <div class="nav-item" onclick="dashMostrarAba('relatorios')">
+      <div class="nav-item" onclick="dashMostrarAba('relatorios', this)">
         <span class="icon">📊</span> Relatórios
       </div>
       <div class="nav-item" onclick="dashAbrirPortalCliente()">
@@ -1213,6 +1260,9 @@
     </div>
 
     <div class="area">
+
+      <!-- VIEW: SOLICITAÇÕES -->
+      <div id="dash-view-solicitacoes" class="dash-view ativo">
 
       <!-- MÉTRICAS -->
       <div class="metricas" id="metricas">
@@ -1292,7 +1342,23 @@
         </div>
       </div>
 
-    </div>
+      </div><!-- /dash-view-solicitacoes -->
+
+      <!-- VIEW: CLIENTES -->
+      <div id="dash-view-clientes" class="dash-view">
+        <div class="clientes-grid" id="dash-clientes-grid">
+          <div style="text-align:center;padding:60px;color:var(--cinza-texto);">Carregando clientes...</div>
+        </div>
+      </div><!-- /dash-view-clientes -->
+
+      <!-- VIEW: RELATÓRIOS -->
+      <div id="dash-view-relatorios" class="dash-view">
+        <div class="rel-grid" id="dash-rel-container">
+          <div style="text-align:center;padding:60px;color:var(--cinza-texto);">Carregando relatórios...</div>
+        </div>
+      </div><!-- /dash-view-relatorios -->
+
+    </div><!-- /area -->
   </div>
 </div>
 
@@ -2755,6 +2821,203 @@ function dashFormatarDataHora(str) {
 // Teclado: ESC fecha modal
 
 
+
+
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD — NAVEGAÇÃO POR ABAS
+════════════════════════════════════════════════════════ */
+function dashMostrarAba(aba, el) {
+  // Atualizar nav
+  document.querySelectorAll('#tela-dashboard .nav-item').forEach(n => n.classList.remove('ativo'));
+  if (el) el.classList.add('ativo');
+
+  // Ocultar todas as views
+  document.querySelectorAll('.dash-view').forEach(v => v.classList.remove('ativo'));
+
+  const titulos = {
+    solicitacoes: '📋 Solicitações de NFS-e',
+    clientes:     '🏢 Clientes Premium',
+    relatorios:   '📊 Relatórios & Métricas'
+  };
+  document.getElementById('titulo-pagina').textContent = titulos[aba] || '📋 Solicitações';
+
+  if (aba === 'solicitacoes') {
+    document.getElementById('dash-view-solicitacoes').classList.add('ativo');
+  } else if (aba === 'clientes') {
+    document.getElementById('dash-view-clientes').classList.add('ativo');
+    dashRenderizarClientes();
+  } else if (aba === 'relatorios') {
+    document.getElementById('dash-view-relatorios').classList.add('ativo');
+    dashRenderizarRelatorios();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD — ABA CLIENTES
+════════════════════════════════════════════════════════ */
+function dashRenderizarClientes() {
+  const grid = document.getElementById('dash-clientes-grid');
+  if (!DASH_DADOS.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:60px;color:var(--cinza-texto);">Nenhum dado disponível.</div>';
+    return;
+  }
+
+  // Agrupar por empresa_cliente
+  const mapa = {};
+  DASH_DADOS.forEach(s => {
+    const nome = s.empresa_cliente || s.email_notif || '(Sem identificação)';
+    if (!mapa[nome]) mapa[nome] = { nome, total: 0, pendentes: 0, emitidas: 0, erros: 0, valor: 0 };
+    mapa[nome].total++;
+    if (s.status === 'pendente' || s.status === 'validada') mapa[nome].pendentes++;
+    if (s.status === 'emitida' || s.status === 'entregue') mapa[nome].emitidas++;
+    if (s.status === 'erro') mapa[nome].erros++;
+    mapa[nome].valor += parseFloat((s.valor || '0').replace(/\./g,'').replace(',','.')) || 0;
+  });
+
+  const clientes = Object.values(mapa).sort((a, b) => b.total - a.total);
+
+  grid.innerHTML = clientes.map(cl => {
+    const badgeCls = cl.erros > 0 ? 'erro' : cl.pendentes > 0 ? 'pend' : 'ok';
+    const badgeTxt = cl.erros > 0 ? `⚠ ${cl.erros} com erro` : cl.pendentes > 0 ? `⏳ ${cl.pendentes} pendente(s)` : '✓ Em dia';
+    const valorFmt = cl.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    return `
+      <div class="cliente-card" onclick="dashFiltrarPorCliente('${cl.nome.replace(/'/g,"\\'")}')">
+        <div class="cli-nome">${cl.nome}</div>
+        <div class="cli-stats">
+          <div class="cli-stat">
+            <div class="lbl">Total NFs</div>
+            <div class="val">${cl.total}</div>
+          </div>
+          <div class="cli-stat">
+            <div class="lbl">Emitidas</div>
+            <div class="val">${cl.emitidas}</div>
+          </div>
+          <div class="cli-stat">
+            <div class="lbl">Pendentes</div>
+            <div class="val">${cl.pendentes}</div>
+          </div>
+          <div class="cli-stat">
+            <div class="lbl">Valor Total</div>
+            <div class="val" style="font-size:0.85rem;">R$ ${valorFmt}</div>
+          </div>
+        </div>
+        <span class="cli-badge ${badgeCls}">${badgeTxt}</span>
+      </div>`;
+  }).join('');
+}
+
+function dashFiltrarPorCliente(nome) {
+  // Vai para a aba de solicitações filtrada por este cliente
+  dashMostrarAba('solicitacoes', document.querySelector('#tela-dashboard .nav-item'));
+  document.getElementById('filtro-cliente').value = nome;
+  dashAplicarFiltros();
+}
+
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD — ABA RELATÓRIOS
+════════════════════════════════════════════════════════ */
+function dashRenderizarRelatorios() {
+  const container = document.getElementById('dash-rel-container');
+  if (!DASH_DADOS.length) {
+    container.innerHTML = '<div style="text-align:center;padding:60px;color:var(--cinza-texto);">Nenhum dado disponível.</div>';
+    return;
+  }
+
+  const agora = new Date();
+  const mesAtual = agora.getMonth();
+  const anoAtual = agora.getFullYear();
+  const mesPast  = mesAtual === 0 ? 11 : mesAtual - 1;
+  const anoPast  = mesAtual === 0 ? anoAtual - 1 : anoAtual;
+
+  const doMes = DASH_DADOS.filter(s => {
+    const d = new Date(s.timestamp);
+    return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+  });
+  const doMesPass = DASH_DADOS.filter(s => {
+    const d = new Date(s.timestamp);
+    return d.getMonth() === mesPast && d.getFullYear() === anoPast;
+  });
+
+  // SLA compliance
+  const comSLA = doMes.filter(s => ['emitida','entregue'].includes(s.status));
+  const totalFechadas = doMes.filter(s => ['emitida','entregue','erro'].includes(s.status));
+  const slaOk = totalFechadas.length > 0 ? Math.round((comSLA.length / totalFechadas.length) * 100) : 100;
+
+  // Valor total do mês
+  const valorMes = doMes.reduce((acc, s) => acc + (parseFloat((s.valor||'0').replace(/\./g,'').replace(',','.')) || 0), 0);
+  const valorFmt = valorMes.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+  // Top clientes
+  const mapaClientes = {};
+  doMes.forEach(s => {
+    const nome = s.empresa_cliente || s.email_notif || '(Sem identificação)';
+    if (!mapaClientes[nome]) mapaClientes[nome] = 0;
+    mapaClientes[nome]++;
+  });
+  const topClientes = Object.entries(mapaClientes).sort((a,b) => b[1]-a[1]).slice(0, 8);
+  const maxVol = topClientes[0]?.[1] || 1;
+
+  // Distribuição por status
+  const porStatus = {
+    pendente: doMes.filter(s => s.status === 'pendente').length,
+    validada: doMes.filter(s => s.status === 'validada').length,
+    emitida:  doMes.filter(s => s.status === 'emitida').length,
+    entregue: doMes.filter(s => s.status === 'entregue').length,
+    erro:     doMes.filter(s => s.status === 'erro').length,
+  };
+
+  const nomeMes = agora.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
+  container.innerHTML = `
+    <!-- KPIs principais -->
+    <div class="rel-card" style="grid-column: 1 / -1;">
+      <h3>Resumo — ${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)}</h3>
+      <div class="rel-kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="rel-kpi">
+          <div class="kval">${doMes.length}</div>
+          <div class="klbl">NFs este mês</div>
+        </div>
+        <div class="rel-kpi">
+          <div class="kval" style="color:var(--verde);">R$ ${valorFmt}</div>
+          <div class="klbl">Volume total (R$)</div>
+        </div>
+        <div class="rel-kpi">
+          <div class="kval" style="color:${slaOk >= 90 ? 'var(--verde)' : slaOk >= 70 ? 'var(--amarelo)' : 'var(--vermelho)'};">${slaOk}%</div>
+          <div class="klbl">SLA cumprido</div>
+        </div>
+        <div class="rel-kpi">
+          <div class="kval" style="color:var(--amarelo);">${doMesPass.length}</div>
+          <div class="klbl">NFs mês anterior</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distribuição por status -->
+    <div class="rel-card">
+      <h3>Distribuição por Status</h3>
+      ${Object.entries({ 'Pendente': porStatus.pendente, 'Em validação': porStatus.validada, 'Emitida': porStatus.emitida, 'Entregue': porStatus.entregue, 'Com Erro': porStatus.erro }).map(([label, qtd]) => `
+        <div class="rel-linha">
+          <span class="rln">${label}</span>
+          <div class="barra-wrap"><div class="barra-fill" style="width:${doMes.length ? Math.round((qtd/doMes.length)*100) : 0}%"></div></div>
+          <span class="rlv">${qtd}</span>
+        </div>`).join('')}
+    </div>
+
+    <!-- Top clientes por volume -->
+    <div class="rel-card">
+      <h3>Ranking de Clientes — este mês</h3>
+      ${topClientes.length === 0
+        ? '<div style="color:var(--cinza-texto);text-align:center;padding:20px;">Sem dados</div>'
+        : topClientes.map(([nome, qtd], i) => `
+          <div class="rel-linha">
+            <span class="rln" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${nome}">${i+1}. ${nome}</span>
+            <div class="barra-wrap"><div class="barra-fill" style="width:${Math.round((qtd/maxVol)*100)}%"></div></div>
+            <span class="rlv">${qtd} NF${qtd > 1 ? 's' : ''}</span>
+          </div>`).join('')
+      }
+    </div>
+  `;
+}
 
 /* ═══════════════════════════════════════════════════════
    INICIALIZAÇÃO
