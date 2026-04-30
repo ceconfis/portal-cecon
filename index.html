@@ -823,7 +823,7 @@
   
 
   /* Dashboard — layout flex override */
-  #tela-dashboard { display: none; min-height: 100vh; }
+  #tela-dashboard { display: none; width: 100vw; min-height: 100vh; position: fixed; top: 0; left: 0; z-index: 100; }
 
     /* ── ABAS DO DASHBOARD ── */
     .dash-view { display: none; width: 100%; }
@@ -1258,8 +1258,8 @@
       <div class="nav-item" onclick="dashAbrirPortalCliente()">
         <span class="icon">🔗</span> Portal Cliente
       </div>
-      <div class="nav-item" onclick="dashAbrirAcompanhamento()">
-        <span class="icon">👁</span> Acompanhamento
+      <div class="nav-item" onclick="dashMostrarAba('emitidas', this)">
+        <span class="icon">✅</span> Emitidas
       </div>
     </nav>
     <div class="sidebar-rodape">
@@ -1392,6 +1392,38 @@
           <div style="text-align:center;padding:60px;color:var(--cinza-texto);">Carregando relatórios...</div>
         </div>
       </div><!-- /dash-view-relatorios -->
+
+      <!-- VIEW: EMITIDAS -->
+      <div id="dash-view-emitidas" class="dash-view">
+        <div class="filtros-bar" style="margin-bottom:20px;">
+          <label>Cliente:</label>
+          <input type="text" id="emit-busca" placeholder="Buscar cliente ou tomador..." oninput="dashRenderizarEmitidas()" style="font-size:0.8rem;padding:7px 12px;border:1.5px solid var(--cinza-borda);border-radius:var(--radius-sm);min-width:200px;" />
+          <label>Mês:</label>
+          <input type="month" id="emit-mes" onchange="dashRenderizarEmitidas()" style="font-size:0.8rem;padding:7px 12px;border:1.5px solid var(--cinza-borda);border-radius:var(--radius-sm);" />
+          <button class="btn-limpar" onclick="document.getElementById('emit-busca').value='';document.getElementById('emit-mes').value='';dashRenderizarEmitidas();">✕ Limpar</button>
+          <span class="contador-resultados" id="emit-contador"></span>
+        </div>
+        <div class="tabela-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Protocolo</th>
+                <th>Cliente CECON</th>
+                <th>Tomador</th>
+                <th>Competência</th>
+                <th>Emitida em</th>
+                <th>Valor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="emit-tbody"></tbody>
+          </table>
+          <div id="emit-vazio" class="vazio" style="display:none;">
+            <div class="icon">📭</div>
+            <p>Nenhuma nota emitida encontrada.</p>
+          </div>
+        </div>
+      </div><!-- /dash-view-emitidas -->
 
     </div><!-- /area -->
   </div>
@@ -2834,7 +2866,51 @@ function dashMostrarAba(aba) {
 }
 
 function dashAbrirPortalCliente()   { voltarAoPortal(); }
-function dashAbrirAcompanhamento()  { window.open('acompanhamento_cliente.html', '_blank'); } // URL a atualizar após deploy
+function dashAbrirAcompanhamento()  { dashMostrarAba('emitidas', null); }
+
+function dashRenderizarEmitidas() {
+  var busca = (document.getElementById('emit-busca') ? document.getElementById('emit-busca').value : '').toLowerCase();
+  var mes   = document.getElementById('emit-mes') ? document.getElementById('emit-mes').value : '';
+  var tbody = document.getElementById('emit-tbody');
+  var vazio = document.getElementById('emit-vazio');
+  var cont  = document.getElementById('emit-contador');
+
+  var lista = DASH_DADOS.filter(function(s) {
+    if (!['emitida','entregue'].includes(s.status)) return false;
+    if (busca) {
+      var haystack = (s.empresa_cliente + ' ' + s.nome_tomador + ' ' + s.doc_tomador).toLowerCase();
+      if (haystack.indexOf(busca) === -1) return false;
+    }
+    if (mes && s.data_emissao && s.data_emissao.substring(0,7) !== mes) return false;
+    return true;
+  }).sort(function(a,b) {
+    return (b.data_emissao || b.timestamp) > (a.data_emissao || a.timestamp) ? 1 : -1;
+  });
+
+  if (cont) cont.textContent = lista.length + ' nota(s) emitida(s)';
+
+  if (!lista.length) {
+    tbody.innerHTML = '';
+    vazio.style.display = 'block';
+    return;
+  }
+  vazio.style.display = 'none';
+
+  tbody.innerHTML = lista.map(function(s) {
+    var statusBadge = s.status === 'entregue'
+      ? '<span class="badge entregue">Entregue</span>'
+      : '<span class="badge emitida">Emitida</span>';
+    return '<tr>' +
+      '<td><code style="font-size:0.75rem;color:var(--azul-claro);">' + s.protocolo + '</code></td>' +
+      '<td><span style="font-weight:600;color:var(--azul);font-size:0.8rem;">' + (s.empresa_cliente || '—') + '</span></td>' +
+      '<td><div class="tomador-nome">' + s.nome_tomador + '</div><div class="tomador-doc">' + s.doc_tomador + '</div></td>' +
+      '<td>' + dashFormatarData(s.data_competencia) + '</td>' +
+      '<td>' + (s.data_emissao ? dashFormatarDataHora(s.data_emissao) : '—') + '</td>' +
+      '<td class="valor-col">R$ ' + s.valor + '</td>' +
+      '<td>' + statusBadge + '</td>' +
+    '</tr>';
+  }).join('');
+}
 
 
 
@@ -2869,10 +2945,11 @@ function dashMostrarAba(aba, el) {
   // Ocultar todas as views
   document.querySelectorAll('.dash-view').forEach(v => v.classList.remove('ativo'));
 
-  const titulos = {
+  var titulos = {
     solicitacoes: '📋 Solicitações de NFS-e',
     clientes:     '🏢 Clientes Premium',
-    relatorios:   '📊 Relatórios & Métricas'
+    relatorios:   '📊 Relatórios & Métricas',
+    emitidas:     '✅ Notas Emitidas'
   };
   document.getElementById('titulo-pagina').textContent = titulos[aba] || '📋 Solicitações';
 
@@ -2884,6 +2961,9 @@ function dashMostrarAba(aba, el) {
   } else if (aba === 'relatorios') {
     document.getElementById('dash-view-relatorios').classList.add('ativo');
     dashRenderizarRelatorios();
+  } else if (aba === 'emitidas') {
+    document.getElementById('dash-view-emitidas').classList.add('ativo');
+    dashRenderizarEmitidas();
   }
 }
 
