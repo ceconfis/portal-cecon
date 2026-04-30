@@ -826,14 +826,38 @@
   #tela-dashboard { display: none; min-height: 100vh; }
 
     /* ── ABAS DO DASHBOARD ── */
-    .dash-view { display: none; }
-    .dash-view.ativo { display: block; }
+    .dash-view { display: none; width: 100%; }
+    .dash-view.ativo { display: block; width: 100%; }
+
+    /* Barra de busca clientes */
+    .cli-search-bar {
+      background: var(--branco);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: var(--sombra);
+      margin-bottom: 20px;
+    }
+    .cli-search-bar input {
+      flex: 1; padding: 9px 14px;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem; font-family: var(--font);
+    }
+    .cli-search-bar input:focus { outline: none; border-color: var(--azul-claro); }
+    .cli-search-bar .cli-total { font-size: 0.8rem; color: var(--cinza-texto); white-space: nowrap; }
+    .cli-search-bar select {
+      padding: 9px 12px; border: 1.5px solid var(--cinza-borda);
+      border-radius: var(--radius-sm); font-size: 0.82rem;
+      background: var(--branco); color: #1e293b;
+    }
 
     /* Clientes */
     .clientes-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 16px;
+      width: 100%;
     }
     .cliente-card {
       background: var(--branco);
@@ -1346,6 +1370,17 @@
 
       <!-- VIEW: CLIENTES -->
       <div id="dash-view-clientes" class="dash-view">
+        <div class="cli-search-bar">
+          <span style="font-size:1.1rem;">🔍</span>
+          <input type="text" id="cli-busca" placeholder="Buscar por nome do cliente..." oninput="dashFiltrarCards()" />
+          <select id="cli-filtro-status" onchange="dashFiltrarCards()">
+            <option value="">Todos os status</option>
+            <option value="pend">Com pendências</option>
+            <option value="erro">Com erros</option>
+            <option value="ok">Em dia</option>
+          </select>
+          <span class="cli-total" id="cli-contador"></span>
+        </div>
         <div class="clientes-grid" id="dash-clientes-grid">
           <div style="text-align:center;padding:60px;color:var(--cinza-texto);">Carregando clientes...</div>
         </div>
@@ -2855,54 +2890,78 @@ function dashMostrarAba(aba, el) {
 /* ═══════════════════════════════════════════════════════
    DASHBOARD — ABA CLIENTES
 ════════════════════════════════════════════════════════ */
+// Cache dos clientes renderizados
+let DASH_CLIENTES_CACHE = [];
+
 function dashRenderizarClientes() {
-  const grid = document.getElementById('dash-clientes-grid');
   if (!DASH_DADOS.length) {
-    grid.innerHTML = '<div style="text-align:center;padding:60px;color:var(--cinza-texto);">Nenhum dado disponível.</div>';
+    document.getElementById('dash-clientes-grid').innerHTML =
+      '<div style="text-align:center;padding:60px;color:var(--cinza-texto);">Nenhum dado disponível.</div>';
     return;
   }
 
-  // Agrupar por empresa_cliente
+  // Agrupar por empresa_cliente — ignorar emails da equipe CECON
+  const emailsEquipe = EQUIPE_EMAILS.map(e => e.toLowerCase());
   const mapa = {};
   DASH_DADOS.forEach(s => {
-    const nome = s.empresa_cliente || s.email_notif || '(Sem identificação)';
+    // Determinar nome do cliente (prioridade: empresa_cliente > email_notif se não for equipe)
+    let nome = s.empresa_cliente && s.empresa_cliente.trim() ? s.empresa_cliente.trim() : null;
+    if (!nome) {
+      const en = (s.email_notif || '').toLowerCase();
+      nome = !emailsEquipe.includes(en) && en ? en : '(Sem identificação)';
+    }
+    // Ignorar entradas da própria equipe como "clientes"
+    const nc = nome.toLowerCase();
+    if (emailsEquipe.some(e => nc.includes(e.split('@')[0]))) return;
     if (!mapa[nome]) mapa[nome] = { nome, total: 0, pendentes: 0, emitidas: 0, erros: 0, valor: 0 };
     mapa[nome].total++;
-    if (s.status === 'pendente' || s.status === 'validada') mapa[nome].pendentes++;
-    if (s.status === 'emitida' || s.status === 'entregue') mapa[nome].emitidas++;
+    if (['pendente','validada'].includes(s.status)) mapa[nome].pendentes++;
+    if (['emitida','entregue'].includes(s.status)) mapa[nome].emitidas++;
     if (s.status === 'erro') mapa[nome].erros++;
-    mapa[nome].valor += parseFloat((s.valor || '0').replace(/\./g,'').replace(',','.')) || 0;
+    mapa[nome].valor += parseFloat((s.valor||'0').replace(/\./g,'').replace(',','.')) || 0;
   });
 
-  const clientes = Object.values(mapa).sort((a, b) => b.total - a.total);
+  DASH_CLIENTES_CACHE = Object.values(mapa).sort((a, b) => b.total - a.total);
+  dashFiltrarCards();
+}
 
-  grid.innerHTML = clientes.map(cl => {
+function dashFiltrarCards() {
+  const busca  = (document.getElementById('cli-busca')?.value || '').toLowerCase();
+  const filtro = document.getElementById('cli-filtro-status')?.value || '';
+  const grid   = document.getElementById('dash-clientes-grid');
+  const cont   = document.getElementById('cli-contador');
+
+  let lista = DASH_CLIENTES_CACHE.filter(cl => {
+    if (busca && !cl.nome.toLowerCase().includes(busca)) return false;
+    if (filtro === 'pend' && cl.pendentes === 0) return false;
+    if (filtro === 'erro' && cl.erros === 0) return false;
+    if (filtro === 'ok'   && (cl.pendentes > 0 || cl.erros > 0)) return false;
+    return true;
+  });
+
+  if (cont) cont.textContent = lista.length + ' cliente(s)';
+
+  if (!lista.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:60px;color:var(--cinza-texto);grid-column:1/-1;">Nenhum cliente encontrado.</div>';
+    return;
+  }
+
+  grid.innerHTML = lista.map(cl => {
     const badgeCls = cl.erros > 0 ? 'erro' : cl.pendentes > 0 ? 'pend' : 'ok';
     const badgeTxt = cl.erros > 0 ? `⚠ ${cl.erros} com erro` : cl.pendentes > 0 ? `⏳ ${cl.pendentes} pendente(s)` : '✓ Em dia';
     const valorFmt = cl.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    return `
-      <div class="cliente-card" onclick="dashFiltrarPorCliente('${cl.nome.replace(/'/g,"\\'")}')">
-        <div class="cli-nome">${cl.nome}</div>
+    const nomeEsc  = cl.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return \`
+      <div class="cliente-card" onclick="dashFiltrarPorCliente('\${nomeEsc}')">
+        <div class="cli-nome">\${cl.nome}</div>
         <div class="cli-stats">
-          <div class="cli-stat">
-            <div class="lbl">Total NFs</div>
-            <div class="val">${cl.total}</div>
-          </div>
-          <div class="cli-stat">
-            <div class="lbl">Emitidas</div>
-            <div class="val">${cl.emitidas}</div>
-          </div>
-          <div class="cli-stat">
-            <div class="lbl">Pendentes</div>
-            <div class="val">${cl.pendentes}</div>
-          </div>
-          <div class="cli-stat">
-            <div class="lbl">Valor Total</div>
-            <div class="val" style="font-size:0.85rem;">R$ ${valorFmt}</div>
-          </div>
+          <div class="cli-stat"><div class="lbl">Total NFs</div><div class="val">\${cl.total}</div></div>
+          <div class="cli-stat"><div class="lbl">Emitidas</div><div class="val">\${cl.emitidas}</div></div>
+          <div class="cli-stat"><div class="lbl">Pendentes</div><div class="val">\${cl.pendentes}</div></div>
+          <div class="cli-stat"><div class="lbl">Valor Total</div><div class="val" style="font-size:0.85rem;">R$ \${valorFmt}</div></div>
         </div>
-        <span class="cli-badge ${badgeCls}">${badgeTxt}</span>
-      </div>`;
+        <span class="cli-badge \${badgeCls}">\${badgeTxt}</span>
+      </div>\`;
   }).join('');
 }
 
