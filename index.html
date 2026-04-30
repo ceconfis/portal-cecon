@@ -2155,7 +2155,7 @@ function gerarSteps(status) {
   }).join('');
 }
 
-var STATUS_LABELS_G = { pendente:'Recebida', validada:'Em validação', emitida:'Emitida', entregue:'Entregue', erro:'Atenção necessária' };
+var STATUS_LABELS_G = { pendente:'Recebida', validada:'Em processamento', emitida:'Emitida', entregue:'Entregue', erro:'Atenção necessária' };
 function badgeStatus(s) {
   return '<span class="badge ' + (s === 'erro' ? 'erro' : s) + '">' + (STATUS_LABELS_G[s] || s) + '</span>';
 }
@@ -2674,16 +2674,16 @@ function dashSlaParaHtml(sla, status) {
 }
 
 function dashBotoesAcao(s) {
-  let html = `<button class="btn-acao ver" onclick='dashAbrirModal("${s.protocolo}")'>👁 Ver</button>`;
+  var html = '<button class="btn-acao ver" onclick='dashAbrirModal("' + s.protocolo + '")'>👁 Ver</button>';
   if (s.status === 'pendente') {
-    html += `<button class="btn-acao aprovar" onclick='dashAlterarStatus("${s.protocolo}","validada")'>✓ Validar</button>`;
-    html += `<button class="btn-acao rejeitar" onclick='dashRejeitarSolicitacao("${s.protocolo}")'>✕ Rejeitar</button>`;
+    html += '<button class="btn-acao emitir" onclick='dashMarcarEmitida("' + s.protocolo + '")'>📄 Emitir NFS-e</button>';
+    html += '<button class="btn-acao rejeitar" onclick='dashRejeitarSolicitacao("' + s.protocolo + '")'>✕ Rejeitar</button>';
   }
   if (s.status === 'validada') {
-    html += `<button class="btn-acao emitir" onclick='dashMarcarEmitida("${s.protocolo}")'>📄 Emitida</button>`;
+    html += '<button class="btn-acao emitir" onclick='dashMarcarEmitida("' + s.protocolo + '")'>📄 Emitir NFS-e</button>';
   }
   if (s.status === 'emitida') {
-    html += `<button class="btn-acao aprovar" onclick='dashAlterarStatus("${s.protocolo}","entregue")'>📧 Entregue</button>`;
+    html += '<button class="btn-acao aprovar" onclick='dashAlterarStatus("' + s.protocolo + '","entregue")'>📧 Entregue</button>';
   }
   return html;
 }
@@ -2702,7 +2702,7 @@ function dashAtualizarMetricas() {
   });
 
   document.getElementById('m-total').textContent    = doMes.length;
-  document.getElementById('m-pendente').textContent = doMes.filter(s => s.status === 'pendente').length;
+  document.getElementById('m-pendente').textContent = doMes.filter(s => s.status === 'pendente' || s.status === 'validada').length;
   document.getElementById('m-emitida').textContent  = doMes.filter(s => ['emitida','entregue'].includes(s.status)).length;
   document.getElementById('m-erro').textContent     = doMes.filter(s => s.status === 'erro').length;
 }
@@ -2762,9 +2762,7 @@ async function dashRejeitarSolicitacao(protocolo) {
 }
 
 async function dashMarcarEmitida(protocolo) {
-  if (confirm(`Confirma que a NFS-e do protocolo ${protocolo} foi emitida no portal gov.br?`)) {
-    await dashAlterarStatus(protocolo, 'emitida');
-  }
+  await dashAlterarStatus(protocolo, 'emitida');
 }
 
 /* =======================================================
@@ -2822,15 +2820,12 @@ function dashAbrirModal(protocolo) {
 
   // Botões no footer
   let footerHtml = `<button class="btn-sm sec" onclick="dashFecharModalBtn()">Fechar</button>`;
-  if (s.status === 'pendente') {
-    footerHtml += `<button class="btn-sm" style="background:var(--verde);" onclick='dashAlterarStatus("${protocolo}","validada")'>✓ Validar Solicitação</button>`;
-    footerHtml += `<button class="btn-sm" style="background:var(--vermelho);" onclick='dashRejeitarSolicitacao("${protocolo}")'>✕ Rejeitar</button>`;
-  }
-  if (s.status === 'validada') {
-    footerHtml += `<button class="btn-sm" onclick='dashMarcarEmitida("${protocolo}")'>📄 Confirmar Emissão</button>`;
+  if (s.status === 'pendente' || s.status === 'validada') {
+    footerHtml += '<button class="btn-sm" style="background:var(--azul-claro);" onclick='dashMarcarEmitida("' + protocolo + '")'>📄 Confirmar Emissão NFS-e</button>';
+    footerHtml += '<button class="btn-sm" style="background:var(--vermelho);" onclick='dashRejeitarSolicitacao("' + protocolo + '")'>✕ Rejeitar</button>';
   }
   if (s.status === 'emitida') {
-    footerHtml += `<button class="btn-sm" style="background:var(--verde);" onclick='dashAlterarStatus("${protocolo}","entregue")'>📧 Confirmar Entrega</button>`;
+    footerHtml += '<button class="btn-sm" style="background:var(--verde);" onclick='dashAlterarStatus("' + protocolo + '","entregue")'>📧 Confirmar Entrega ao Cliente</button>';
   }
   document.getElementById('modal-footer').innerHTML = footerHtml;
 
