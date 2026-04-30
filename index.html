@@ -2926,16 +2926,16 @@ function dashRenderizarClientes() {
 }
 
 function dashFiltrarCards() {
-  const busca  = (document.getElementById('cli-busca')?.value || '').toLowerCase();
-  const filtro = document.getElementById('cli-filtro-status')?.value || '';
-  const grid   = document.getElementById('dash-clientes-grid');
-  const cont   = document.getElementById('cli-contador');
+  var busca  = (document.getElementById('cli-busca') ? document.getElementById('cli-busca').value : '').toLowerCase();
+  var filtro = document.getElementById('cli-filtro-status') ? document.getElementById('cli-filtro-status').value : '';
+  var grid   = document.getElementById('dash-clientes-grid');
+  var cont   = document.getElementById('cli-contador');
 
-  let lista = DASH_CLIENTES_CACHE.filter(cl => {
-    if (busca && !cl.nome.toLowerCase().includes(busca)) return false;
+  var lista = DASH_CLIENTES_CACHE.filter(function(cl) {
+    if (busca && cl.nome.toLowerCase().indexOf(busca) === -1) return false;
     if (filtro === 'pend' && cl.pendentes === 0) return false;
     if (filtro === 'erro' && cl.erros === 0) return false;
-    if (filtro === 'ok'   && (cl.pendentes > 0 || cl.erros > 0)) return false;
+    if (filtro === 'ok' && (cl.pendentes > 0 || cl.erros > 0)) return false;
     return true;
   });
 
@@ -2946,22 +2946,22 @@ function dashFiltrarCards() {
     return;
   }
 
-  grid.innerHTML = lista.map(cl => {
-    const badgeCls = cl.erros > 0 ? 'erro' : cl.pendentes > 0 ? 'pend' : 'ok';
-    const badgeTxt = cl.erros > 0 ? `⚠ ${cl.erros} com erro` : cl.pendentes > 0 ? `⏳ ${cl.pendentes} pendente(s)` : '✓ Em dia';
-    const valorFmt = cl.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    const nomeEsc  = cl.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return \`
-      <div class="cliente-card" onclick="dashFiltrarPorCliente('\${nomeEsc}')">
-        <div class="cli-nome">\${cl.nome}</div>
-        <div class="cli-stats">
-          <div class="cli-stat"><div class="lbl">Total NFs</div><div class="val">\${cl.total}</div></div>
-          <div class="cli-stat"><div class="lbl">Emitidas</div><div class="val">\${cl.emitidas}</div></div>
-          <div class="cli-stat"><div class="lbl">Pendentes</div><div class="val">\${cl.pendentes}</div></div>
-          <div class="cli-stat"><div class="lbl">Valor Total</div><div class="val" style="font-size:0.85rem;">R$ \${valorFmt}</div></div>
-        </div>
-        <span class="cli-badge \${badgeCls}">\${badgeTxt}</span>
-      </div>\`;
+  grid.innerHTML = lista.map(function(cl) {
+    var badgeCls = cl.erros > 0 ? 'erro' : cl.pendentes > 0 ? 'pend' : 'ok';
+    var badgeTxt = cl.erros > 0 ? ('⚠ ' + cl.erros + ' com erro') : cl.pendentes > 0 ? ('⏳ ' + cl.pendentes + ' pendente(s)') : '✓ Em dia';
+    var valorFmt = cl.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    var nomeEsc  = cl.nome.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    var nomeJS   = cl.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return '<div class="cliente-card" onclick="dashFiltrarPorCliente(\'' + nomeJS + '\')">' +
+      '<div class="cli-nome">' + cl.nome + '</div>' +
+      '<div class="cli-stats">' +
+        '<div class="cli-stat"><div class="lbl">Total NFs</div><div class="val">' + cl.total + '</div></div>' +
+        '<div class="cli-stat"><div class="lbl">Emitidas</div><div class="val">' + cl.emitidas + '</div></div>' +
+        '<div class="cli-stat"><div class="lbl">Pendentes</div><div class="val">' + cl.pendentes + '</div></div>' +
+        '<div class="cli-stat"><div class="lbl">Valor Total</div><div class="val" style="font-size:0.85rem;">R$ ' + valorFmt + '</div></div>' +
+      '</div>' +
+      '<span class="cli-badge ' + badgeCls + '">' + badgeTxt + '</span>' +
+    '</div>';
   }).join('');
 }
 
