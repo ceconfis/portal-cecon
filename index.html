@@ -1478,4 +1478,33 @@ function fmtDataHora(str) {
 
 function mostrarToast(msg, tipo) {
   tipo = tipo || 'sucesso';
-  var c = document.getElementById('toast-container
+  var c = document.getElementById('toast-container');
+  var t = document.createElement('div');
+  t.className = 'toast ' + tipo;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(function() {
+    t.style.animation = 'slideIn 0.3s ease reverse';
+    setTimeout(function(){ t.remove(); }, 300);
+  }, 3500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   INICIALIZAÇÃO
+════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  // Fallback de segurança: garante que o loading some em qualquer cenário
+  setTimeout(function() {
+    var ov = document.getElementById('loading-overlay');
+    if (ov && ov.style.display !== 'none') {
+      ov.classList.add('fade');
+      setTimeout(function() { ov.style.display = 'none'; }, 400);
+      mostrarLogin();
+    }
+  }, 5000);
+
+  iniciarAuth();
+});
+</script>
+</body>
+</html>
